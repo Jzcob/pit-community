@@ -215,9 +215,11 @@ class levels(commands.Cog):
     @app_commands.checks.has_any_role(config.administrators, config.true_admin, config.transparent_admin)
     async def list_levels(self, interaction: discord.Interaction):
         try:
-            embed = discord.Embed(title="Levels", description="List of all the levels", color=0x00ff00)
+            embed = discord.Embed(title="Levels", description="List of all the levels\n\n", color=0x00ff00)
+            level = ""
             for i in range(len(limit)):
-                embed.add_field(name=f"Level {i+1}", value=f"XP: {limit[i]:,}", inline=False)
+                level += f"Level {i+1}: XP: {limit[i]:,}\n"
+            embed.description += level
             await interaction.response.send_message(embed=embed, ephemeral=True)
         except Exception as e:
             error_channel = self.bot.get_channel(config.error_channel)
