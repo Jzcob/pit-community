@@ -8,7 +8,7 @@ import os
 import requests
 load_dotenv()
 
-api_key = os.getenv("api_key")
+api_key = os.getenv("dev_key")
 
 db = mysql.connector.connect(
     host=os.getenv("punishments_host"),
@@ -54,17 +54,13 @@ class general(commands.Cog):
     @app_commands.checks.has_any_role(config.moderator, config.administrators, config.transparent_admin, config.true_admin)
     async def whoIs(self, interaction: discord.Interaction, user: discord.User):
         try:
-            print("0")
             cursor.execute(f"SELECT * FROM verified WHERE user_id = {user.id}")
             result = cursor.fetchone()
             uuid = result[1]
-            print(uuid)
             url = f"https://api.hypixel.net/player?key={api_key}&uuid={uuid}"
             response = requests.get(url)
             data = response.json()
-            print(data)
             ign = data["player"]["displayname"]
-            print(ign)
             if result is None:
                 embed = discord.Embed(title="Who Is", description=f"{user.mention} has not verified!", color=0x00ff00)
                 await interaction.response.send_message(embed=embed, ephemeral=True)
