@@ -54,12 +54,15 @@ class general(commands.Cog):
     @app_commands.checks.has_any_role(config.moderator, config.administrators, config.transparent_admin, config.true_admin)
     async def whoIs(self, interaction: discord.Interaction, user: discord.User):
         try:
+            print("0")
             cursor.execute(f"SELECT * FROM verified WHERE user_id = {user.id}")
             result = cursor.fetchone()
             uuid = result[1]
+            print(uuid)
             url = f"https://api.hypixel.net/player?key={api_key}&uuid={uuid}"
             response = requests.get(url)
             data = response.json()
+            print(data)
             ign = data["player"]["displayname"]
             print(ign)
             if result is None:
