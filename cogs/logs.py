@@ -169,11 +169,6 @@ class logs(commands.Cog):
             embed.add_field(name="Hoist After", value=after.hoist, inline=False)
             logs = self.bot.get_channel(config.log_channel)
             await logs.send(embed=embed)
-        elif before.position != after.position:
-            embed.add_field(name="Position Before", value=before.position, inline=False)
-            embed.add_field(name="Position After", value=after.position, inline=False)
-            logs = self.bot.get_channel(config.log_channel)
-            await logs.send(embed=embed)
         elif before.permissions != after.permissions:
             if before.permissions.administrator != after.permissions.administrator:
                 embed.add_field(name="Administrator Before", value=before.permissions.administrator, inline=False)
