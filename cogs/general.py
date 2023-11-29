@@ -61,6 +61,7 @@ class general(commands.Cog):
             response = requests.get(url)
             data = response.json()
             ign = data["player"]["displayname"]
+            print(ign)
             if result is None:
                 embed = discord.Embed(title="Who Is", description=f"{user.mention} has not verified!", color=0x00ff00)
                 await interaction.response.send_message(embed=embed, ephemeral=True)
