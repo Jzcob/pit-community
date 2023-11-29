@@ -89,6 +89,26 @@ class levels(commands.Cog):
             error_channel = self.bot.get_channel(config.error_channel)
             await error_channel.send(f"```Error in `on_message` in levels.py\n{e}\n```")
     
+    @app_commands.command(name="level", description="Shows your level")
+    async def level(self, interaction: discord.Interaction, user: discord.User = None, hidden: bool=None):
+        try:
+            if user is None:
+                user = interaction.user
+            cursor.execute(f"SELECT * FROM levels WHERE user_id = {user.id}")
+            result = cursor.fetchone()
+            if result is None:
+                embed = discord.Embed(title="Error", description="This user does not have any xp.", color=0xff0000)
+                await interaction.response.send_message(embed=embed)
+            else:
+                level = result[2]
+                xp = result[1]
+                embed = discord.Embed(title="Level", description=f"Level: `{level}`\nXP: `{xp}`", color=0x00ff00)
+                await interaction.response.send_message(embed=embed, ephemeral=hidden)
+        except Exception as e:
+            error_channel = self.bot.get_channel(config.error_channel)
+            await error_channel.send(f"```Error in `/level`\n{e}\n```")
+
+
     @app_commands.command(name="add-xp", description="Adds xp to a user")
     @app_commands.checks.has_any_role(config.administrators, config.true_admin, config.transparent_admin)
     async def add_xp(self, interaction: discord.Interaction, user: discord.User, xp: int):
