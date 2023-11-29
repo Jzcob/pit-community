@@ -3,7 +3,20 @@ from discord.ext import commands
 from discord import app_commands
 import config
 from dotenv import load_dotenv
+import mysql.connector
+import os
+import requests
 load_dotenv()
+
+api_key = os.getenv("api_key")
+
+db = mysql.connector.connect(
+    host=os.getenv("punishments_host"),
+    user=os.getenv("punishments_user"),
+    password=os.getenv("punishments_password"),
+    database=os.getenv("punishments_database")
+)
+cursor = db.cursor()
 
 class general(commands.Cog):
     def __init__(self, bot):
@@ -36,6 +49,29 @@ class general(commands.Cog):
         except Exception as e:
             error_channel = self.bot.get_channel(config.error_channel)
             await error_channel.send(f"```Error in `/send`\n{e}\n```")
+    
+    @app_commands.command(name="who-is", description="Get users in-game name.")
+    @app_commands.checks.has_any_role(config.moderator, config.administrators, config.transparent_admin, config.true_admin)
+    async def whoIs(self, interaction: discord.Interaction, user: discord.User):
+        try:
+            cursor.execute(f"SELECT * FROM verified WHERE user_id = {user.id}")
+            result = cursor.fetchone()
+            uuid = result[2]
+            url = f"https://api.hypixel.net/player?key={api_key}&uuid={uuid}"
+            response = requests.get(url)
+            data = response.json()
+            ign = data["player"]["displayname"]
+            if result is None:
+                embed = discord.Embed(title="Who Is", description=f"{user.mention} has not verified!", color=0x00ff00)
+                await interaction.response.send_message(embed=embed, ephemeral=True)
+            else:
+                ign = result[1]
+                embed = discord.Embed(title="Who Is", description=f"{user.mention} is `{ign}` in-game.", color=0x00ff00)
+                embed.set_author(name=user, icon_url=user.display_avatar)
+                await interaction.response.send_message(embed=embed, ephemeral=True)
+        except Exception as e:
+            error_channel = self.bot.get_channel(config.error_channel)
+            await error_channel.send(f"```Error in `/who-is`\n{e}\n```")
 
 async def setup(bot):
     await bot.add_cog(general(bot), guilds=[discord.Object(id=config.server_id)])

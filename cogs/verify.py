@@ -9,7 +9,7 @@ import mysql.connector
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 load_dotenv()
-api_key = os.getenv("dev_key")
+api_key = os.getenv("api_key")
 
 db = mysql.connector.connect(
     host=os.getenv("punishments_host"),
@@ -117,9 +117,13 @@ class verify(commands.Cog):
                         elif rank == "MVP":
                             await interaction.user.add_roles(mvp)
                         elif rank == "MVP_PLUS":
+                            try:
+                                monthlyPackageRank = response.json()['player']['monthlyPackageRank']
+                            except:
+                                pass
+                            if monthlyPackageRank == "SUPERSTAR":
+                                await interaction.user.add_roles(mvp_plus_plus)
                             await interaction.user.add_roles(mvp_plus)
-                        elif rank == "MVP_PLUS_PLUS":
-                            await interaction.user.add_roles(mvp_plus_plus)
                         else:
                             await msg.edit(content="Please make a ticket with `/ticket` to get your rank.")
                     try:
