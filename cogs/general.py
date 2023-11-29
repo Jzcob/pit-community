@@ -14,7 +14,7 @@ class general(commands.Cog):
         print("LOADED: `general.py`")
     
     @commands.Cog.listener()
-    async def on_join(self, member: discord.Member):
+    async def on_member_join(self, member: discord.Member):
         try:
             if member.guild.id == config.server_id:
                 await member.add_roles(member.guild.get_role(config.members))
