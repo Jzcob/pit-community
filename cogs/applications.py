@@ -9,6 +9,7 @@ import mysql.connector
 from dotenv import load_dotenv
 load_dotenv()
 api_key = os.getenv("dev_key")
+
 db = mysql.connector.connect(
     host=os.getenv("punishments_host"),
     user=os.getenv("punishments_user"),
@@ -16,9 +17,6 @@ db = mysql.connector.connect(
     database=os.getenv("punishments_database")
 )
 cursor = db.cursor()
-
-
-
 
 applications_channel_id = 1179232602855575572
 appeals_channel_id = 1179230717465608263
@@ -40,7 +38,6 @@ class ApplicationModal(discord.ui.Modal, title="Staff Application", ):
             age = str(self.age.value)
             age = int(age)
             applicationForum = interaction.guild.get_channel(applications_channel_id)
-            print(data)
             if age <= 13:
                 embed = discord.Embed(title=f"{interaction.user.name}'s Staff Application",description="Warning this user is 13 or under", color=0xff0000)
                 embed.add_field(name="IGN", value=data['player']['displayname'], inline=False)
@@ -49,7 +46,7 @@ class ApplicationModal(discord.ui.Modal, title="Staff Application", ):
                 embed.add_field(name="Any past moderation/leadership experience?", value=self.experience.value, inline=False)
                 embed.add_field(name="Your response to acceptance/denial?", value=self.question.value, inline=False)
                 embed.add_field(name="How much time can you lend to the server?", value=self.time.value, inline=False)
-                embed.set_thumbnail(url=interaction.user.avatar_url)
+                embed.set_thumbnail(url=interaction.user.avatar)
             else:
                 embed = discord.Embed(title=f"{interaction.user.name}'s Staff Application", color=0x00ff00)
                 embed.add_field(name="Age", value=self.age.value, inline=False)
@@ -58,15 +55,15 @@ class ApplicationModal(discord.ui.Modal, title="Staff Application", ):
                 embed.add_field(name="Any past moderation/leadership experience?", value=self.experience.value, inline=False)
                 embed.add_field(name="Your response to acceptance/denial?", value=self.question.value, inline=False)
                 embed.add_field(name="How much time can you lend to the server?", value=self.time.value, inline=False)
-                embed.set_thumbnail(url=interaction.user.avatar_url)
-            print("11")
-            await applicationForum.create_thread(embed=embed)
-            print("12")
-            await interaction.response.send_message(f"Your application has been submitted.\n\nYou will be contacted by me <@1174111999882436720> about the result of your information.\n# Please make sure that your privacy settings for direct messages are turned on for Pit Community.\nIf you have any questions feel free to make a ticket!", ephemeral=True)
-            print("13")
+                embed.set_thumbnail(url=interaction.user.avatar)
+            await applicationForum.create_thread(name=f"{interaction.user.name}'s Staff Application",embed=embed)
+            await interaction.response.send_message(f"Your application has been submitted.\n\nYou will be contacted by me <@279409843964608514> about the result of your information.\n# Please make sure that your privacy settings for direct messages are turned on for Pit Community.\nIf you have any questions feel free to make a ticket!", ephemeral=True)
             g = open("applied.json", "r")
             applied = json.load(g)
-            applied.append(str(interaction.user.id))
+            applied = {
+                **applied,
+                f"{interaction.user.id}" : True
+            }
             g = open("applied.json", "w")
             json.dump(applied, g)
             g.close()
@@ -84,7 +81,6 @@ class applications(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         print("LOADED: `applications.py`")
-        print(api_key)
     
     @app_commands.command(name="toggle-applications", description="Toggle whether or not applications are open.")
     @commands.has_permissions(administrator=True)
