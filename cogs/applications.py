@@ -10,14 +10,14 @@ load_dotenv()
 applications_channel_id = 1179232602855575572
 appeals_channel_id = 1179230717465608263
 
-class ApplicationModal(discord.ui.View, title="Staff Application", description="Please answer the following questions to the best of your ability. \n\nPlease don't close this window until you're done answers do not save."):
+class ApplicationModal(discord.ui.Modal, title="Staff Application"):
     age = discord.ui.TextInput(label= "How old are you?", max_length= 2, required= True)
     whyStaff = discord.ui.TextInput(label= "Why do you want to become a staff member?", style=TextStyle.long, required= True)
     experience = discord.ui.TextInput(label= "Any past moderation/leadership experience?", style=TextStyle.long, required= True)
     question = discord.ui.TextInput(label="Your response to acceptance/denial?", style=TextStyle.long, required=True)
     time = discord.ui.TextInput(label="How much time can you lend to the server?", style=TextStyle.long, required=True)
     async def on_submit(self, interaction: discord.Interaction):
-        
+        pass
 
 class applications(commands.Cog):
     def __init__(self, bot):
