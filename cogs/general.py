@@ -8,7 +8,7 @@ import os
 import requests
 load_dotenv()
 
-api_key = os.getenv("api_key")
+api_key = os.getenv("dev_key")
 
 db = mysql.connector.connect(
     host=os.getenv("punishments_host"),
@@ -56,18 +56,17 @@ class general(commands.Cog):
         try:
             cursor.execute(f"SELECT * FROM verified WHERE user_id = {user.id}")
             result = cursor.fetchone()
-            uuid = result[2]
+            uuid = result[1]
             url = f"https://api.hypixel.net/player?key={api_key}&uuid={uuid}"
             response = requests.get(url)
             data = response.json()
             ign = data["player"]["displayname"]
             if result is None:
-                embed = discord.Embed(title="Who Is", description=f"{user.mention} has not verified!", color=0x00ff00)
+                embed = discord.Embed(description=f"{user.mention} has not verified!", color=0x00ff00)
                 await interaction.response.send_message(embed=embed, ephemeral=True)
             else:
-                ign = result[1]
-                embed = discord.Embed(title="Who Is", description=f"{user.mention} is `{ign}` in-game.", color=0x00ff00)
-                embed.set_author(name=user, icon_url=user.display_avatar)
+                embed = discord.Embed(description=f"`{ign}` in-game.", color=0x00ff00)
+                embed.set_author(name=user.name, icon_url=user.display_avatar)
                 await interaction.response.send_message(embed=embed, ephemeral=True)
         except Exception as e:
             error_channel = self.bot.get_channel(config.error_channel)
