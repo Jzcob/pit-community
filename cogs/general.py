@@ -62,10 +62,10 @@ class general(commands.Cog):
             data = response.json()
             ign = data["player"]["displayname"]
             if result is None:
-                embed = discord.Embed(title="Who Is", description=f"{user.mention} has not verified!", color=0x00ff00)
+                embed = discord.Embed(description=f"{user.mention} has not verified!", color=0x00ff00)
                 await interaction.response.send_message(embed=embed, ephemeral=True)
             else:
-                embed = discord.Embed(title="Who Is", description=f"`{ign}` in-game.", color=0x00ff00)
+                embed = discord.Embed(description=f"`{ign}` in-game.", color=0x00ff00)
                 embed.set_author(name=user.name, icon_url=user.display_avatar)
                 await interaction.response.send_message(embed=embed, ephemeral=True)
         except Exception as e:
