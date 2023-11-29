@@ -13,6 +13,15 @@ class general(commands.Cog):
     async def on_ready(self):
         print("LOADED: `general.py`")
     
+    @commands.Cog.listener()
+    async def on_join(self, member: discord.Member):
+        try:
+            if member.guild.id == config.server_id:
+                await member.add_roles(member.guild.get_role(config.members))
+        except Exception as e:
+            error_channel = self.bot.get_channel(config.error_channel)
+            await error_channel.send(f"```Error in `on_join`\n{e}\n```")
+    
     @app_commands.command(name="send", description="Make the bot say something.")
     @app_commands.checks.has_any_role(config.moderator, config.administrators, config.transparent_admin, config.true_admin)
     async def say(self, interaction: discord.Interaction, *, message: str, channel: discord.TextChannel = None):
