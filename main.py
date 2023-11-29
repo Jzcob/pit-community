@@ -161,6 +161,10 @@ def create_notes_table():
 def create_levels_table():
     cursor.execute("CREATE TABLE IF NOT EXISTS levels (user_id BIGINT, xp BIGINT, level BIGINT)")
     db.commit()
+    
+def create_verified_table():
+    cursor.execute("CREATE TABLE IF NOT EXISTS verified (user_id BIGINT, uuid VARCHAR(255), timestamp BIGINT)")
+    db.commit()
 """
 
 
@@ -181,7 +185,8 @@ async def main():
     create_bans_table()
     create_kicks_table()
     create_notes_table()
-    create_levels_table()"""
+    create_levels_table()
+    create_verified_table()"""
     await bot.start(os.getenv("token"))
 
 asyncio.run(main())
