@@ -637,13 +637,16 @@ class logs(commands.Cog):
     
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
-        if message.author == self.bot.user:
-            return
-
-        if len(message.attachments) > 0:
+        try:
+            if message.author == self.bot.user:
+                return
             for attachment in message.attachments:
                 if attachment.content_type.startswith('image/'):
                     logs_channel = self.bot.get_channel(736794546767396864)
-                    await logs_channel.send(f"Attachments:\n{attachment.ephemeral_url()}")
+                    await logs_channel.send(f"Attachments:\n{attachment}")
+        except Exception as e:
+            error_channel = self.bot.get_channel(config.error_channel)
+            await error_channel.send(f"Error in on_message: {e}")
+
 async def setup(bot):
     await bot.add_cog(logs(bot))
