@@ -610,6 +610,7 @@ class logs(commands.Cog):
 
     async def on_member_join(self, member: discord.Member):
         invite_log = 499001163278975006
+        logs = self.bot.get_channel(invite_log)
         memberCount = f"{len(member.guild.members)}"
         if memberCount.endswith("1"):
             memberCount = f"{len(member.guild.members)}st"

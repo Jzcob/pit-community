@@ -1,4 +1,1 @@
-{
-    "accepting-applications" : true,
-    "accepting-appeals" : true
-}
+{"accepting-applications": false, "accepting-appeals": true}

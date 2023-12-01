@@ -19,7 +19,6 @@ db = mysql.connector.connect(
 cursor = db.cursor()
 
 applications_channel_id = 1179232602855575572
-appeals_channel_id = 1179230717465608263
 
 class ApplicationModal(discord.ui.Modal, title="Staff Application", ):
     age = discord.ui.TextInput(label= "How old are you?", max_length= 2, required= True)
@@ -69,7 +68,8 @@ class ApplicationModal(discord.ui.Modal, title="Staff Application", ):
             g.close()
             return
         except Exception as e:
-            print(e)
+            error_channel = self.bot.get_channel(config.error_channel)
+            
 
 
     
@@ -87,15 +87,16 @@ class applications(commands.Cog):
     async def toggle_applications(self, interaction: discord.Interaction):
         f = open("info.json", "r")
         data = json.load(f)
-        if data["applications"] == True:
+
+        if data["accepting-applications"] == True:
             f = open("info.json", "w")
-            data["applications"] = False
+            data["accepting-applications"] = False
             json.dump(data, f)
             f.close()
             await interaction.response.send_message("Applications are now closed.", ephemeral=True)
         else:
             f = open("info.json", "w")
-            data["applications"] = True
+            data["accepting-applications"] = True
             json.dump(data, f)
             f.close()
             await interaction.response.send_message("Applications are now open.", ephemeral=True)
@@ -128,6 +129,25 @@ class applications(commands.Cog):
         except Exception as e:
             error_channel = self.bot.get_channel(config.error_channel)
             await error_channel.send(f"Error in `/apply`.\n{e}")
+    
+    @app_commands.command(name="toggle-appeals", description="Toggle whether or not appeals are open.")
+    @commands.has_permissions(administrator=True)
+    async def toggle_appeals(self, interaction: discord.Interaction):
+        f = open("info.json", "r")
+        data = json.load(f)
+
+        if data["accepting-appeals"] == True:
+            f = open("info.json", "w")
+            data["accepting-appeals"] = False
+            json.dump(data, f)
+            f.close()
+            await interaction.response.send_message("Appeals are now closed.", ephemeral=True)
+        else:
+            f = open("info.json", "w")
+            data["accepting-appeals"] = True
+            json.dump(data, f)
+            f.close()
+            await interaction.response.send_message("Appeals are now open.", ephemeral=True)
 
 async def setup(bot):
 

@@ -107,6 +107,35 @@ class levels(commands.Cog):
         except Exception as e:
             error_channel = self.bot.get_channel(config.error_channel)
             await error_channel.send(f"```Error in `/level`\n{e}\n```")
+    
+    @app_commands.command(name="top", description="Shows the top 10 users")
+    async def top(self, interaction: discord.Interaction, hidden: bool=None):
+        try:
+            user = interaction.user
+            cursor.execute(f"SELECT COUNT(*) FROM levels")
+            count = cursor.fetchone()[0]
+            cursor.execute(f"SELECT * FROM levels ORDER BY level DESC, xp DESC LIMIT 10")
+            result = cursor.fetchall()
+            embed = discord.Embed(color=0x00ff00)
+            embed.set_author(name="Leaderboard for Pit Community", icon_url=self.bot.user.display_avatar)
+            top = ""
+            for i in range(len(result)):
+                user1 = await self.bot.fetch_user(result[i][0])
+                level = result[i][2]
+                xp = result[i][1]
+                if user.id == user1.id:
+                    top += f"**{i+1}.** **{user1.mention}\nLevel `{level}` with `{xp}` xp**\n"
+                else:
+                    top += f"**{i+1}.** {user1.mention}\nLevel `{level}` with `{xp}` xp\n"
+            embed.description = top
+            if count > 10:
+                embed.set_footer(text=f"1-10 out of {count}")
+            else:
+                embed.set_footer(text=f"1-{count} out of {count}")
+            await interaction.response.send_message(embed=embed, ephemeral=hidden)
+        except Exception as e:
+            error_channel = self.bot.get_channel(config.error_channel)
+            await error_channel.send(f"```Error in `/top`\n{e}\n```")
 
 
     @app_commands.command(name="add-xp", description="Adds xp to a user")
