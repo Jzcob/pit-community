@@ -164,7 +164,8 @@ class applications(commands.Cog):
             await user.send(f"Sorry {user.mention}, your application has been denied.\nReason: {reason}")
             await interaction.response.send_message(f"{user.mention}'s application has been denied, this channel will now be locked and closed.", ephemeral=True)
             await applicationForum.edit(locked=True)
-            await interaction.channel.add_tag("denied").remove_tag("under review")
+            await interaction.channel.applied_tags.append("denied")
+            await interaction.channel.applied_tags.remove("under review")
             await applicationForum.edit(archived=True)
         except Exception as e:
             error_channel = self.bot.get_channel(config.error_channel)
