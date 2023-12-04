@@ -69,11 +69,7 @@ class ApplicationModal(discord.ui.Modal, title="Staff Application", ):
             return
         except Exception as e:
             error_channel = self.bot.get_channel(config.error_channel)
-            
-            
-
-
-    
+            await error_channel.send(f"Error in apply modal.\n{e}")
 
 class applications(commands.Cog):
     def __init__(self, bot):
@@ -131,6 +127,57 @@ class applications(commands.Cog):
             error_channel = self.bot.get_channel(config.error_channel)
             await error_channel.send(f"Error in `/apply`.\n{e}")
     
+    @app_commands.command(name="accept", description="Accept a user's application.")
+    @commands.has_permissions(administrator=True)
+    async def accept(self, interaction: discord.Interaction, user: discord.User):
+        try:
+            applicationForum = interaction.guild.get_channel(applications_channel_id)
+            await user.send(f"Congratulations {user.mention}! Your application has been accepted.\nAn Administrator will contact you shortly.")
+            await interaction.response.send_message(f"{user.mention}'s application has been accepted, this channel will now be locked and closed.", ephemeral=True)
+            await applicationForum.edit(locked=True)
+            tags = discord.ForumTags()
+            tags.add_tag("accepted")
+            await applicationForum.edit(tags=tags)
+            tags = discord.ForumTags()
+            tags.remove_tag("under review")
+            await applicationForum.edit(tags=tags)
+            await applicationForum.edit(archived=True)
+        except Exception as e:
+            error_channel = self.bot.get_channel(config.error_channel)
+            await error_channel.send(f"Error in `/accept`.\n{e}")
+    
+    @app_commands.command(name="deny", description="Deny a user's application.")
+    @commands.has_permissions(administrator=True)
+    @app_commands.describe(reason="The reason for denial.")
+    @app_commands.choices(reason=[
+        app_commands.Choice(name="Not old enough", value="age"),
+        app_commands.Choice(name="No experienced", value="experience"),
+        app_commands.Choice(name="Not enough time", value="time"),
+        app_commands.Choice(name="Not detailed enough", value="detailed")
+    ])
+    async def deny(self, interaction: discord.Interaction, user: discord.User, reason: app_commands.Choice[str]=None, custom_reason: str=None):
+        if reason == None and custom_reason == None:
+            return await interaction.response.send_message("Please provide a reason.", ephemeral=True)
+        if reason == None:
+            reason = custom_reason
+        try:
+            applicationForum = interaction.guild.get_channel(applications_channel_id)
+            await user.send(f"Sorry {user.mention}, your application has been denied.\nReason: {reason}")
+            await interaction.response.send_message(f"{user.mention}'s application has been denied, this channel will now be locked and closed.", ephemeral=True)
+            await applicationForum.edit(locked=True)
+            tags = discord.ForumTags()
+            tags.add_tag("denied")
+            await applicationForum.edit(tags=tags)
+            tags = discord.ForumTags()
+            tags.remove_tag("under review")
+            await applicationForum.edit(tags=tags)
+            await applicationForum.edit(archived=True)
+        except Exception as e:
+            error_channel = self.bot.get_channel(config.error_channel)
+            await error_channel.send(f"Error in `/deny`.\n{e}")
+
+
+
     @app_commands.command(name="toggle-appeals", description="Toggle whether or not appeals are open.")
     @commands.has_permissions(administrator=True)
     async def toggle_appeals(self, interaction: discord.Interaction):
