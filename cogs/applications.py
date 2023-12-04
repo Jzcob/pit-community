@@ -163,11 +163,9 @@ class applications(commands.Cog):
         if reason == None:
             reason = custom_reason
         try:
-            applicationForum = interaction.guild.get_channel(applications_channel_id)
             await user.send(f"Sorry {user.mention}, your application has been denied.\nReason: {reason}")
             await interaction.response.send_message(f"{user.mention}'s application has been denied, this channel will now be locked and closed.", ephemeral=True)
-            await applicationForum.edit(locked=True)
-            await applicationForum.edit(archived=True)
+            await interaction.channel.edit(locked=True, archived=True)
         except Exception as e:
             error_channel = self.bot.get_channel(config.error_channel)
             await error_channel.send(f"Error in `/deny`.\n{e}")
