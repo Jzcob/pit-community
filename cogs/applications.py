@@ -132,6 +132,8 @@ class applications(commands.Cog):
     async def accept(self, interaction: discord.Interaction, user: discord.User):
         try:
             applicationForum = interaction.guild.get_channel(applications_channel_id)
+            if interaction.channel.parent.id != applications_channel_id:
+                return await interaction.response.send_message("This command can only be used in applications.", ephemeral=True)
             await user.send(f"Congratulations {user.mention}! Your application has been accepted.\nAn Administrator will contact you shortly.")
             await interaction.response.send_message(f"{user.mention}'s application has been accepted, this channel will now be locked and closed.", ephemeral=True)
             await applicationForum.edit(locked=True)
@@ -156,6 +158,8 @@ class applications(commands.Cog):
         app_commands.Choice(name="Not detailed enough", value="detailed")
     ])
     async def deny(self, interaction: discord.Interaction, user: discord.User, reason: app_commands.Choice[str]=None, custom_reason: str=None):
+        if interaction.channel.parent.id != applications_channel_id:
+            return await interaction.response.send_message("This command can only be used in applications.", ephemeral=True)
         if reason == None and custom_reason == None:
             return await interaction.response.send_message("Please provide a reason.", ephemeral=True)
         if reason == None:
