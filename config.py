@@ -50,7 +50,11 @@ lord_of_karma = 461967488700121112
 network_lord = 461967485558718476
 network_master = 783210116614455328
 no_life = 461967520711311372
-
+### Application Reasons
+age = "You must be 13 years or older to apply.\n\nDue to being underage and breaking discord's TOS we are forced to ban you from the server. If you feel that you made a mistake when entering your age, please make an appeal with `/appel`. Please note that you will not be unbanned if you are underage."
+experience = "Your application shows that you lack the experience that we are looking for in a staff member.\n\nYou may reapply in 2 weeks. If you apply again before then, your application will be denied without review.\n\nIf you feel that you have the experience required, please make a ticket with `/ticket`."
+time = "Your application shows that you do not have enough time to be a staff member.\n\nYou may reapply in 2 weeks. If you apply again before then, your application will be denied without review.\n\nIf you feel that you have the experience required, please make a ticket with `/ticket`."
+detailed = "Your application shows that you did not put enough effort into your application.\n\nYou may reapply in 2 weeks. If you apply again before then, your application will be denied without review.\n\nIf you feel that you have the experience required, please make a ticket with `/ticket`."
 
 ## General
 level_limit = [150, 225, 337, 506, 759, 1139, 1708, 2562, 3844, 5766, 8649, 12974, 19461, 29192, 43789, 65684, 98526, 147789, 221683, 332525, 498787, 748180, 1122270, 1683405, 2525107, 3787660, 5681490, 8522235, 12783352, 19175028, 28762542, 43143813, 64715720, 97073580, 145610370, 218415555, 327623332, 491434998, 737152497, 1105738745, 1658608118, 2487912177, 3731868265, 5597802397, 8396703596, 12595055394, 18892583091, 28338874636, 42508311954, 63762467931]

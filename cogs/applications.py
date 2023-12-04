@@ -138,9 +138,15 @@ class applications(commands.Cog):
             await user.send(f"Congratulations {user.mention}! Your application has been accepted.\nAn Administrator will contact you shortly.")
             await interaction.response.send_message(f"{user.mention}'s application has been accepted, this channel will now be locked and closed.", ephemeral=True)
             await applicationForum.edit(locked=True)
-            thread = applicationForum.get_thread(name=f"{user.name}'s Staff Application")
-            await thread.add_tag("Accepted")
-            await thread.remove_tag("Under Review")
+            a = open("applied.json", "r")
+            applied = json.load(a)
+            applied = {
+                **applied,
+                f"{user.id}" : False
+            }
+            a = open("applied.json", "w")
+            json.dump(applied, a)
+            a.close()
             await applicationForum.edit(archived=True)
         except Exception as e:
             error_channel = self.bot.get_channel(config.error_channel)
@@ -162,14 +168,62 @@ class applications(commands.Cog):
             return await interaction.response.send_message("Please provide a reason.", ephemeral=True)
         if reason == None:
             reason = custom_reason
-        try:
             await user.send(f"Sorry {user.mention}, your application has been denied.\nReason: {reason}")
             await interaction.response.send_message(f"{user.mention}'s application has been denied, this channel will now be locked and closed.", ephemeral=True)
             await interaction.channel.edit(locked=True, archived=True)
+        
+        try:
+            if reason.value == "age":
+                await user.send(f"Sorry {user.mention}, your application has been denied.\nReason: {config.age}")
+                await user.ban(reason="Underage")
+                await interaction.response.send_message(f"{user.mention}'s application has been denied, this channel will now be locked and closed.", ephemeral=True)
+                await interaction.channel.edit(locked=True, archived=True)
+                return
+            elif reason.value == "experience":
+                await user.send(f"Sorry {user.mention}, your application has been denied.\nReason: {config.experience}")
+                await interaction.response.send_message(f"{user.mention}'s application has been denied, this channel will now be locked and closed.", ephemeral=True)
+                a = open("applied.json", "r")
+                applied = json.load(a)
+                applied = {
+                    **applied,
+                    f"{user.id}" : False
+                }
+                a = open("applied.json", "w")
+                json.dump(applied, a)
+                a.close()
+                await interaction.channel.edit(locked=True, archived=True)
+                return
+            elif reason.value == "time":
+                await user.send(f"Sorry {user.mention}, your application has been denied.\nReason: {config.time}")
+                await interaction.response.send_message(f"{user.mention}'s application has been denied, this channel will now be locked and closed.", ephemeral=True)
+                await interaction.channel.edit(locked=True, archived=True)
+                a = open("applied.json", "r")
+                applied = json.load(a)
+                applied = {
+                    **applied,
+                    f"{user.id}" : False
+                }
+                a = open("applied.json", "w")
+                json.dump(applied, a)
+                a.close()
+                return
+            elif reason.value == "detailed":
+                await user.send(f"Sorry {user.mention}, your application has been denied.\nReason: {config.detailed}")
+                await interaction.response.send_message(f"{user.mention}'s application has been denied, this channel will now be locked and closed.", ephemeral=True)
+                await interaction.channel.edit(locked=True, archived=True)
+                a = open("applied.json", "r")
+                applied = json.load(a)
+                applied = {
+                    **applied,
+                    f"{user.id}" : False
+                }
+                a = open("applied.json", "w")
+                json.dump(applied, a)
+                a.close()
+                return
         except Exception as e:
             error_channel = self.bot.get_channel(config.error_channel)
             await error_channel.send(f"Error in `/deny`.\n{e}")
-
 
 
     @app_commands.command(name="toggle-appeals", description="Toggle whether or not appeals are open.")
