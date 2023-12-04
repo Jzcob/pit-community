@@ -11,6 +11,7 @@ import asyncio
 import discord
 from discord.ext import commands
 from discord.ui import Button
+import time
 load_dotenv()
 
 db = mysql.connector.connect(
@@ -22,6 +23,10 @@ db = mysql.connector.connect(
 cursor = db.cursor()
 
 playing = discord.Activity(type=discord.ActivityType.playing, name="The Pit")
+
+messages_per_minute = {
+
+}
 
 class Confirm(discord.ui.View):
     def __init__(self) -> None:
@@ -40,6 +45,8 @@ class Confirm(discord.ui.View):
 class levels(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.message_count = {}
+        self.message_per_minute = {}
     
     @commands.Cog.listener()
     async def on_ready(self):
@@ -55,6 +62,17 @@ class levels(commands.Cog):
                 return
             if message.content.startswith("!"):
                 return
+            # Check if the user has reached the message limit
+            if message.author.id in self.message_count:
+                current_time = int(time.time())
+                if current_time - int(self.message_count[message.author.id]) <= 60:
+                    if self.message_per_minute[message.author.id] >= 5:
+                        return
+                else:
+                    del self.message_count[message.author.id]
+                    del self.message_per_minute[message.author.id]
+            
+
             cursor.execute(f"SELECT * FROM levels WHERE user_id = {message.author.id}")
             result = cursor.fetchone()
             if result is None:
@@ -80,11 +98,20 @@ class levels(commands.Cog):
                     result = cursor.fetchone()
                     level = result[2]
                     reaction = '🆙'
-                    return await message.add_reaction(reaction)
+                    await message.add_reaction(reaction)
                 else:
                     cursor.execute(f"UPDATE levels SET xp = {xp} WHERE user_id = {message.author.id}")
                     db.commit()
-                    return
+
+            # Update the message count for the user
+            if message.author.id in self.message_per_minute:
+                count = self.message_per_minute[message.author.id] + 1
+                self.message_per_minute[message.author.id] = count
+            else:
+                count = 1
+                self.message_per_minute[message.author.id] = count
+                self.message_count[message.author.id] = int(time.time())
+
         except Exception as e:
             error_channel = self.bot.get_channel(config.error_channel)
             await error_channel.send(f"```Error in `on_message` in levels.py\n{e}\n```")
