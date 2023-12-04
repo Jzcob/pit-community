@@ -246,7 +246,6 @@ class levels(commands.Cog):
             else:
                 for i in range(len(limit)):
                     if xp >= limit[i]:
-                        print(limit[i])
                         level = limit[i]
                         break
                 cursor.execute(f"UPDATE levels SET xp = {xp}, level = {level} WHERE user_id = {user.id}")
