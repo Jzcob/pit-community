@@ -70,6 +70,7 @@ class ApplicationModal(discord.ui.Modal, title="Staff Application", ):
         except Exception as e:
             error_channel = self.bot.get_channel(config.error_channel)
             
+            
 
 
     
