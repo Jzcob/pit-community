@@ -78,7 +78,7 @@ class general(commands.Cog):
                 if image == None:
                     pass
                 else:
-                    embed.set_image(url=image)
+                    embed.set_thumbnail(url=image)
                 msg = await channel.fetch_message(message_id)
                 await msg.edit(embed=embed)
                 await interaction.response.send_message(f"Edited message in {channel.mention}", ephemeral=True)
@@ -87,7 +87,7 @@ class general(commands.Cog):
                 if image == None:
                     pass
                 else:
-                    embed.set_image(url=image)
+                    embed.set_thumbnail(url=image)
                 msg = await channel.fetch_message(message_id)
                 await msg.edit(embed=embed)
                 await interaction.response.send_message(f"Edited message in {channel.mention}", ephemeral=True)
