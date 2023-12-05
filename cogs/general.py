@@ -67,6 +67,23 @@ class general(commands.Cog):
             error_channel = self.bot.get_channel(config.error_channel)
             await error_channel.send(f"```Error in `/send-embed`\n{e}\n```")
     
+    @app_commands.command(name="edit-embed", description="Edit an embed.")
+    @app_commands.checks.has_any_role(config.moderator, config.administrators, config.transparent_admin, config.true_admin)
+    async def editEmbed(self, interaction: discord.Interaction, message_id: str, title: str, message: str):
+        try:
+            if channel == None:
+                channel = interaction.channel
+                embed = discord.Embed(title=title, description=message, color=0x00ff00)
+                await channel.fetch_message(int(message_id)).edit(embed=embed)
+                await interaction.response.send_message(f"Edited message in {channel.mention}", ephemeral=True)
+            else:
+                embed = discord.Embed(title=title, description=message, color=0x00ff00)
+                await channel.fetch_message(int(message_id)).edit(embed=embed)
+                await interaction.response.send_message(f"Edited message in {channel.mention}", ephemeral=True)
+        except Exception as e:
+            error_channel = self.bot.get_channel(config.error_channel)
+            await error_channel.send(f"```Error in `/edit-embed`\n{e}\n```")
+    
     @app_commands.command(name="who-is", description="Get users in-game name.")
     @app_commands.checks.has_any_role(config.moderator, config.administrators, config.transparent_admin, config.true_admin)
     async def whoIs(self, interaction: discord.Interaction, user: discord.User):
