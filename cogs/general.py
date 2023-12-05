@@ -69,7 +69,7 @@ class general(commands.Cog):
     
     @app_commands.command(name="edit-embed", description="Edit an embed.")
     @app_commands.checks.has_any_role(config.moderator, config.administrators, config.transparent_admin, config.true_admin)
-    async def editEmbed(self, interaction: discord.Interaction, message_id: str, title: str, message: str, image: discord.Attachment=None, custom_color: discord.Color=None, channel: discord.TextChannel = None):
+    async def editEmbed(self, interaction: discord.Interaction, message_id: str, title: str, message: str, image: discord.Attachment=None, custom_color: str=None, channel: discord.TextChannel = None):
         try:
             if custom_color == None:
                 color = 0x00ff00
