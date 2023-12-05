@@ -32,7 +32,7 @@ class TicketsModal(discord.ui.Modal, title="Ticket - Pit Community"):
                 ticketChannel = await interaction.guild.create_text_channel(name=f"ticket-{discord_user.name.lower()}", category=ticketCategory, overwrites=overwrites, reason=f"Ticket opened by {discord_user}")
                 embed = discord.Embed(description=f"You have opened a ticket, congratulations\nSomeone will be with you soon.\nOnce we respond, please respond back in a timely manner\n*Don't just ghost us :(*\n\nIGN: {self.ign}\nMessage:\n{self.question}", color=0x00ff00)
                 await interaction.response.send_message(content="Ticket created!", ephemeral=True)
-                await ticketChannel.send(f"{discord_user.mention} {staffPing.mention}", embed=embed)
+                await ticketChannel.send(f"{discord_user.mention} {staffPing.name}", embed=embed)
                 await ticketLog.send(f"Ticket created by {discord_user.mention} in {ticketChannel.mention}")
             except Exception as e:
                 print(e)
