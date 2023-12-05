@@ -52,7 +52,7 @@ class general(commands.Cog):
     
     @app_commands.command(name="send-embed", description="Make the bot say something in an embed.")
     @app_commands.checks.has_any_role(config.moderator, config.administrators, config.transparent_admin, config.true_admin)
-    async def sayEmbed(self, interaction: discord.Interaction, *, title= str, message: str, channel: discord.TextChannel = None):
+    async def sayEmbed(self, interaction: discord.Interaction, *, title: str, message: str, channel: discord.TextChannel = None):
         try:
             if channel == None:
                 channel = interaction.channel
