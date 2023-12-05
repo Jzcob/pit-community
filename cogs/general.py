@@ -52,15 +52,23 @@ class general(commands.Cog):
     
     @app_commands.command(name="send-embed", description="Make the bot say something in an embed.")
     @app_commands.checks.has_any_role(config.moderator, config.administrators, config.transparent_admin, config.true_admin)
-    async def sayEmbed(self, interaction: discord.Interaction, *, title: str, message: str, channel: discord.TextChannel = None):
+    async def sayEmbed(self, interaction: discord.Interaction, *, title: str, message: str, image: discord.Attachment=None, channel: discord.TextChannel = None):
         try:
             if channel == None:
                 channel = interaction.channel
                 embed = discord.Embed(title=title, description=message, color=0x00ff00)
+                if image == None:
+                    pass
+                else:
+                    embed.set_thumbnail(url=image)
                 await channel.send(embed=embed)
                 await interaction.response.send_message(f"Sent message to {channel.mention}", ephemeral=True)
             else:
                 embed = discord.Embed(title=title, description=message, color=0x00ff00)
+                if image == None:
+                    pass
+                else:
+                    embed.set_thumbnail(url=image)
                 await channel.send(embed=embed)
                 await interaction.response.send_message(f"Sent message to {channel.mention}", ephemeral=True)
         except Exception as e:
