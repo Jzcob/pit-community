@@ -74,11 +74,13 @@ class general(commands.Cog):
             if channel == None:
                 channel = interaction.channel
                 embed = discord.Embed(title=title, description=message, color=0x00ff00)
-                await channel.fetch_message(int(message_id)).edit(embed=embed)
+                msg = await channel.fetch_message(id=int(message_id))
+                await msg.edit(embed=embed)
                 await interaction.response.send_message(f"Edited message in {channel.mention}", ephemeral=True)
             else:
                 embed = discord.Embed(title=title, description=message, color=0x00ff00)
-                await channel.fetch_message(int(message_id)).edit(embed=embed)
+                msg = await channel.fetch_message(id=int(message_id))
+                await msg.edit(embed=embed)
                 await interaction.response.send_message(f"Edited message in {channel.mention}", ephemeral=True)
         except Exception as e:
             error_channel = self.bot.get_channel(config.error_channel)
