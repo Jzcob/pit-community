@@ -72,12 +72,12 @@ class general(commands.Cog):
     async def editEmbed(self, interaction: discord.Interaction, message_id: str, title: str, message: str, image: discord.Attachment=None, custom_color: str=None, channel: discord.TextChannel = None):
         try:
             if custom_color == None:
-                color = 0x00ff00
+                color = "00ff00"
             else:
                 color = custom_color
             if channel == None:
                 channel = interaction.channel
-                embed = discord.Embed(title=title, description=message, color=color)
+                embed = discord.Embed(title=title, description=message, color=f"0x{color}")
                 if image == None:
                     pass
                 else:
@@ -86,7 +86,7 @@ class general(commands.Cog):
                 await msg.edit(embed=embed)
                 await interaction.response.send_message(f"Edited message in {channel.mention}", ephemeral=True)
             else:
-                embed = discord.Embed(title=title, description=message, color=color)
+                embed = discord.Embed(title=title, description=message, color=f"0x{color}")
                 if image == None:
                     pass
                 else:
