@@ -370,6 +370,21 @@ class punishments(commands.Cog):
         except Exception as e:
             error_channel = self.bot.get_channel(config.error_channel)
             await error_channel.send(f"Error in `/notes`: {e}")
+    
+    @app_commands.command(name="purge", description="Purge a user's messages.")
+    @app_commands.describe(amount="The amount of messages to purge.")
+    @app_commands.checks.has_any_role(config.moderator, config.administrators, config.transparent_admin, config.true_admin)
+    async def purge(self, interaction: discord.Interaction, amount: int, member: discord.Member=None):
+        try:
+            if member == None:
+                await interaction.channel.purge(limit=amount+1)
+                await interaction.response.send_message(f"Purged {amount} messages", ephemeral=True)
+                return
+            await interaction.channel.purge(limit=amount+1, check=lambda m: m.author == member)
+            await interaction.response.send_message(f"Purged {amount} messages from {member.mention}", ephemeral=True)
+        except Exception as e:
+            error_channel = self.bot.get_channel(config.error_channel)
+            await error_channel.send(f"Error in `/purge`: {e}")
 
 
 async def setup(bot):

@@ -65,7 +65,7 @@ class appeals(commands.Cog):
     ])
     async def appeal(self, interaction: discord.Interaction, type: discord.app_commands.Choice[str]):
         try:
-            cursor.execute(f"SELECT * FROM warns WHERE user_id = {interaction.user.id}")
+            cursor.execute(f"SELECT * FROM warnings WHERE user_id = {interaction.user.id}")
             result = cursor.fetchone()
             cursor.execute(f"SELECT * FROM kicks WHERE user_id = {interaction.user.id}")
             result2 = cursor.fetchone()
