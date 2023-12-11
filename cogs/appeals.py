@@ -23,7 +23,7 @@ class AppealModal(discord.ui.Modal, title="Appeal a punishment"):
     justified = discord.ui.TextInput(label="Do you think your punishment was justified?", min_length=50, style=TextStyle.long, required=True)
     async def on_submit(self, interaction: discord.Interaction):
         try:
-            appealForum = interaction.client.get_channel
+            appealForum = interaction.client.get_channel(appeals_channel_id)
             embed = discord.Embed(title=f"{interaction.user.name}'s Appeal", color=0x00ff00)
             embed.add_field(name="Punishment Reason", value=self.punishmentReason.value, inline=False)
             embed.add_field(name="Understanding", value=self.understanding.value, inline=False)
@@ -65,14 +65,26 @@ class appeals(commands.Cog):
     ])
     async def appeal(self, interaction: discord.Interaction, type: discord.app_commands.Choice[str]):
         try:
-            cursor.execute(f"SELECT * FROM warnings WHERE user_id = {interaction.user.id}")
-            result = cursor.fetchone()
-            cursor.execute(f"SELECT * FROM kicks WHERE user_id = {interaction.user.id}")
-            result2 = cursor.fetchone()
-            cursor.execute(f"SELECT * FROM bans WHERE user_id = {interaction.user.id}")
-            result3 = cursor.fetchone()
-            cursor.execute(f"SELECT * FROM timeouts WHERE user_id = {interaction.user.id}")
-            result4 = cursor.fetchone()
+            try:
+                cursor.execute(f"SELECT * FROM warnings WHERE user_id = {interaction.user.id}")
+                result = cursor.fetchone()
+            except:
+                pass
+            try:
+                cursor.execute(f"SELECT * FROM kicks WHERE user_id = {interaction.user.id}")
+                result2 = cursor.fetchone()
+            except:
+                pass
+            try:
+                cursor.execute(f"SELECT * FROM bans WHERE user_id = {interaction.user.id}")
+                result3 = cursor.fetchone()
+            except:
+                pass
+            try:
+                cursor.execute(f"SELECT * FROM timeouts WHERE user_id = {interaction.user.id}")
+                result4 = cursor.fetchone()
+            except:
+                pass
             if result is None and result2 is None and result3 is None and result4 is None:
                 return await interaction.response.send_message("You have no punishments to appeal.", ephemeral=True)
             if type.value == "warn":
@@ -87,7 +99,7 @@ class appeals(commands.Cog):
             if type.value == "timeout":
                 if result4 is None:
                     return await interaction.response.send_message("You have no timeouts to appeal.", ephemeral=True)
-                
+            await interaction.response.send_modal(AppealModal())
             f = open("appealed.json", "r")
             data = json.load(f)
             g = open("info.json", "r")

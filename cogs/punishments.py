@@ -371,6 +371,19 @@ class punishments(commands.Cog):
             error_channel = self.bot.get_channel(config.error_channel)
             await error_channel.send(f"Error in `/notes`: {e}")
     
+    @app_commands.command(name="unban", description="Unban a user.")
+    @app_commands.checks.has_any_role(config.jr_moderator, config.moderator, config.administrators, config.transparent_admin, config.true_admin)
+    async def unban(self, interaction: discord.Interaction, user: discord.User, *, reason: str):
+        try:
+            mod_logs = self.bot.get_channel(config.mod_log_channel)
+            embed = discord.Embed(title=f"Unbanned {user.name}", description=f"Reason: {reason}\nStaff: {interaction.user.mention}", color=0x00ff00)
+            await interaction.guild.unban(user, reason=reason)
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+            await mod_logs.send(embed=embed)
+        except Exception as e:
+            error_channel = self.bot.get_channel(config.error_channel)
+            await error_channel.send(f"Error in `/unban`: {e}")
+
     @app_commands.command(name="purge", description="Purge a user's messages.")
     @app_commands.describe(amount="The amount of messages to purge.")
     @app_commands.checks.has_any_role(config.moderator, config.administrators, config.transparent_admin, config.true_admin)
