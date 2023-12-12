@@ -74,6 +74,8 @@ class levels(commands.Cog):
             
             if message.channel.category.id == 687310845331636236:
                 return
+            if message.channel.id in config.blacklisted_channels:
+                return
             
 
             cursor.execute(f"SELECT * FROM levels WHERE user_id = {message.author.id}")
