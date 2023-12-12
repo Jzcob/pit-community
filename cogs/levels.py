@@ -271,6 +271,17 @@ class levels(commands.Cog):
             error_channel = self.bot.get_channel(config.error_channel)
             await error_channel.send(f"```Error in `/reset-levels`\n{e}\n```")
     
+    @app_commands.command(name="reset-member", description="Resets a member's level")
+    @app_commands.checks.has_any_role(config.administrators, config.true_admin, config.transparent_admin)
+    async def reset_member(self, interaction: discord.Interaction, user: discord.User):
+        try:
+            cursor.execute(f"DELETE FROM levels WHERE user_id = {user.id}")
+            db.commit()
+            await interaction.response.send_message(f"Reset {user.mention}'s level.", ephemeral=True)
+        except Exception as e:
+            error_channel = self.bot.get_channel(config.error_channel)
+            await error_channel.send(f"```Error in `/reset-member`\n{e}\n```")
+    
     @app_commands.command(name="list-levels", description="List all the levels")
     @app_commands.checks.has_any_role(config.administrators, config.true_admin, config.transparent_admin)
     async def list_levels(self, interaction: discord.Interaction):
