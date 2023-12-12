@@ -54,7 +54,7 @@ class levels(commands.Cog):
         await self.bot.change_presence(status=discord.Status.online, activity=playing)
     
     @commands.Cog.listener()
-    async def on_message(self, message):
+    async def on_message(self, message: discord.Message):
         try:
             if message.author.bot:
                 return
@@ -71,6 +71,9 @@ class levels(commands.Cog):
                 else:
                     del self.message_count[message.author.id]
                     del self.message_per_minute[message.author.id]
+            
+            if message.channel.category.id == 687310845331636236:
+                return
             
 
             cursor.execute(f"SELECT * FROM levels WHERE user_id = {message.author.id}")
