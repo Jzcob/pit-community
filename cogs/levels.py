@@ -24,6 +24,7 @@ cursor = db.cursor()
 
 playing = discord.Activity(type=discord.ActivityType.playing, name="The Pit")
 
+allowed_channels = [922246457241780225]
 messages_per_minute = {
 
 }
@@ -74,48 +75,49 @@ class levels(commands.Cog):
             
             if message.channel.category.id == 687310845331636236:
                 return
-            if message.channel.id in config.blacklisted_channels:
-                return
-            
-
-            cursor.execute(f"SELECT * FROM levels WHERE user_id = {message.author.id}")
-            result = cursor.fetchone()
-            if result is None:
-                cursor.execute(f"INSERT INTO levels (user_id, xp, level) VALUES ({message.author.id}, 0, 0)")
-                db.commit()
-            else:
-                cursor.execute(f"UPDATE levels SET xp = xp + 1 WHERE user_id = {message.author.id}")
-                db.commit()
+            if message.channel.id in allowed_channels or message.channel.category.id == 461982692188094474 or message.channel.category.id == 461970002535251979:
+                if message.channel.id == 922273598801084506:
+                    return
                 cursor.execute(f"SELECT * FROM levels WHERE user_id = {message.author.id}")
                 result = cursor.fetchone()
-                xp = result[1]
-                level = result[2]
-                counting_channel = self.bot.get_channel(config.counting_channel)
-                if message.channel.id == counting_channel:
-                    xp += random.randint(2, 5)
+                if result is None:
+                    cursor.execute(f"INSERT INTO levels (user_id, xp, level) VALUES ({message.author.id}, 0, 0)")
+                    db.commit()
                 else:
-                    xp += random.randint(1, 3)
-                if xp >= limit[level]:
-                    level += 1
-                    cursor.execute(f"UPDATE levels SET xp = {xp}, level = {level} WHERE user_id = {message.author.id}")
+                    cursor.execute(f"UPDATE levels SET xp = xp + 1 WHERE user_id = {message.author.id}")
                     db.commit()
                     cursor.execute(f"SELECT * FROM levels WHERE user_id = {message.author.id}")
                     result = cursor.fetchone()
+                    xp = result[1]
                     level = result[2]
-                    reaction = '🆙'
-                    await message.add_reaction(reaction)
-                else:
-                    cursor.execute(f"UPDATE levels SET xp = {xp} WHERE user_id = {message.author.id}")
-                    db.commit()
-
-            # Update the message count for the user
-            if message.author.id in self.message_per_minute:
-                count = self.message_per_minute[message.author.id] + 1
-                self.message_per_minute[message.author.id] = count
+                    counting_channel = self.bot.get_channel(config.counting_channel)
+                    if message.channel.id == counting_channel:
+                        xp += random.randint(2, 5)
+                    else:
+                        xp += random.randint(1, 3)
+                    if xp >= limit[level]:
+                        level += 1
+                        cursor.execute(f"UPDATE levels SET xp = {xp}, level = {level} WHERE user_id = {message.author.id}")
+                        db.commit()
+                        cursor.execute(f"SELECT * FROM levels WHERE user_id = {message.author.id}")
+                        result = cursor.fetchone()
+                        level = result[2]
+                        reaction = '🆙'
+                        await message.add_reaction(reaction)
+                    else:
+                        cursor.execute(f"UPDATE levels SET xp = {xp} WHERE user_id = {message.author.id}")
+                        db.commit()
             else:
-                count = 1
-                self.message_per_minute[message.author.id] = count
-                self.message_count[message.author.id] = int(time.time())
+                return
+
+                # Update the message count for the user
+                if message.author.id in self.message_per_minute:
+                    count = self.message_per_minute[message.author.id] + 1
+                    self.message_per_minute[message.author.id] = count
+                else:
+                    count = 1
+                    self.message_per_minute[message.author.id] = count
+                    self.message_count[message.author.id] = int(time.time())
 
         except Exception as e:
             error_channel = self.bot.get_channel(config.error_channel)
