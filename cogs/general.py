@@ -124,6 +124,17 @@ class general(commands.Cog):
         except Exception as e:
             error_channel = self.bot.get_channel(config.error_channel)
             await error_channel.send(f"```Error in `/who-is`\n{e}\n```")
+    
+    @app_commands.command(name="add-reaction", description="Add a reaction to a message.")
+    @app_commands.checks.has_any_role(config.moderator, config.administrators, config.transparent_admin, config.true_admin)
+    async def addReaction(self, interaction: discord.Interaction, message_id: str, emoji: str):
+        try:
+            message = await interaction.channel.fetch_message(message_id)
+            await message.add_reaction(emoji)
+            await interaction.response.send_message(f"Added reaction to message in {interaction.channel.mention}", ephemeral=True)
+        except Exception as e:
+            error_channel = self.bot.get_channel(config.error_channel)
+            await error_channel.send(f"```Error in `/add-reaction`\n{e}\n```")
 
 async def setup(bot):
     await bot.add_cog(general(bot), guilds=[discord.Object(id=config.server_id)])
