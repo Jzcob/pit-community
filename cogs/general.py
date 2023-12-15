@@ -84,7 +84,7 @@ class general(commands.Cog):
                 channel = interaction.channel
                 embed = discord.Embed(title=title, description=message, color=color)
                 if image == None:
-                    pass
+                    pass 
                 else:
                     embed.set_thumbnail(url=image)
                 msg = await channel.fetch_message(message_id)
