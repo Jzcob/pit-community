@@ -63,6 +63,7 @@ class Hypixel(commands.Cog):
             embed.add_field(name="Last Logout", value=f"{lastLogout}", inline=False)
 
 
-            
+async def setup(bot):
+    await bot.add_cog(Hypixel(bot), guilds=[discord.Object(id=882708221697863434)])
         
     
