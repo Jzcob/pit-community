@@ -136,5 +136,29 @@ class general(commands.Cog):
             error_channel = self.bot.get_channel(config.error_channel)
             await error_channel.send(f"```Error in `/add-reaction`\n{e}\n```")
 
+    @app_commands.command(name="motm", description="Set the member of the month.")
+    @app_commands.checks.has_any_role(config.administrators, config.transparent_admin, config.true_admin)
+    @app_commands.describe(announce="Should the bot announce the member of the month?", dm="Should the bot DM the member of the month?")
+    @app_commands.choices(announce=[
+        app_commands.Choice(name="Yes", value=True),
+        app_commands.Choice(name="No", value=False)
+    ])
+    @app_commands.choices(dm=[
+        app_commands.Choice(name="Yes", value=True),
+        app_commands.Choice(name="No", value=False)
+    ])
+    async def motm(self, interaction: discord.Interaction, newuser: discord.User, olduser: discord.User, announce: discord.app_commands.Choice[str], dm: discord.app_commands.Choice[str]):
+        role = interaction.guild.get_role(config.motm)
+        await newuser.add_roles(role)
+        await olduser.remove_roles(role)
+        if announce == True:
+            await interaction.channel.send(f"{newuser.mention} is the new member of the month!")
+        if dm == True:
+            await newuser.send(f"You are the new member of the month!")
+        return await interaction.response.send_message(f"Set {newuser.mention} as the member of the month.", ephemeral=True)
+
+
+
+
 async def setup(bot):
     await bot.add_cog(general(bot), guilds=[discord.Object(id=config.server_id)])
