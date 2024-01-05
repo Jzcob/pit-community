@@ -138,11 +138,12 @@ class general(commands.Cog):
 
     @app_commands.command(name="motm", description="Set the member of the month.")
     @app_commands.checks.has_any_role(config.administrators, config.transparent_admin, config.true_admin)
-    @app_commands.describe(announce="Should the bot announce the member of the month?", dm="Should the bot DM the member of the month?")
+    @app_commands.describe(announce="Should the bot announce the member of the month?")
     @app_commands.choices(announce=[
         app_commands.Choice(name="Yes", value=True),
         app_commands.Choice(name="No", value=False)
     ])
+    @app_commands.describe(dm="Should the bot dm the member of the month?")
     @app_commands.choices(dm=[
         app_commands.Choice(name="Yes", value=True),
         app_commands.Choice(name="No", value=False)
