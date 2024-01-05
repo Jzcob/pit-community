@@ -140,21 +140,21 @@ class general(commands.Cog):
     @app_commands.checks.has_any_role(config.administrators, config.transparent_admin, config.true_admin)
     @app_commands.describe(announce="Should the bot announce the member of the month?")
     @app_commands.choices(announce=[
-        app_commands.Choice(name="Yes", value=True),
-        app_commands.Choice(name="No", value=False)
+        app_commands.Choice(name="Yes", value="yes"),
+        app_commands.Choice(name="No", value="no")
     ])
     @app_commands.describe(dm="Should the bot dm the member of the month?")
     @app_commands.choices(dm=[
-        app_commands.Choice(name="Yes", value=True),
-        app_commands.Choice(name="No", value=False)
+        app_commands.Choice(name="Yes", value="yes"),
+        app_commands.Choice(name="No", value="no")
     ])
     async def motm(self, interaction: discord.Interaction, newuser: discord.User, olduser: discord.User, announce: discord.app_commands.Choice[str], dm: discord.app_commands.Choice[str]):
         role = interaction.guild.get_role(config.motm)
         await newuser.add_roles(role)
         await olduser.remove_roles(role)
-        if announce == True:
+        if announce.value == "yes":
             await interaction.channel.send(f"{newuser.mention} is the new member of the month!")
-        if dm == True:
+        if dm,value == "yes":
             await newuser.send(f"You are the new member of the month!")
         return await interaction.response.send_message(f"Set {newuser.mention} as the member of the month.", ephemeral=True)
 
