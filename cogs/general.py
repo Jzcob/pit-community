@@ -154,7 +154,7 @@ class general(commands.Cog):
         await olduser.remove_roles(role)
         if announce.value == "yes":
             await interaction.channel.send(f"{newuser.mention} is the new member of the month!")
-        if dm,value == "yes":
+        if dm.value == "yes":
             await newuser.send(f"You are the new member of the month!")
         return await interaction.response.send_message(f"Set {newuser.mention} as the member of the month.", ephemeral=True)
 
