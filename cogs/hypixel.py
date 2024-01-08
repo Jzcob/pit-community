@@ -18,7 +18,7 @@ class Hypixel(commands.Cog):
     
     @commands.Cog.listener()
     async def on_ready(self):
-        print('Hypixel cog is loaded!')
+        print('LOADED: `hypixel.py`')
     
     @app_commands.command(name="hypixel", description="Get hypixel stats")
     async def hypixel(self, interaction: discord.Interaction, ign: str):
