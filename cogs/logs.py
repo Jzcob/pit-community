@@ -461,6 +461,8 @@ class logs(commands.Cog):
                     embed.set_footer(text=f"ID: {before.id}")
                     logs = self.bot.get_channel(config.log_channel)
                     await logs.send(embed=embed)
+                else:
+                    return
             except Exception as e:
                 error_channel = self.bot.get_channel(config.error_channel)
                 await error_channel.send(f"Error in on_member_update: {e}")
@@ -488,13 +490,6 @@ class logs(commands.Cog):
                     embed = discord.Embed(title="User Discriminator Updated", color=0x00ff00)
                     embed.add_field(name="Before", value=before.discriminator, inline=False)
                     embed.add_field(name="After", value=after.discriminator, inline=False)
-                    embed.set_author(name=before, icon_url=before.avatar)
-                    logs = self.bot.get_channel(config.log_channel)
-                    await logs.send(embed=embed)
-                else:
-                    embed = discord.Embed(title="User Updated", color=0x00ff00)
-                    embed.add_field(name="Before", value=before, inline=False)
-                    embed.add_field(name="After", value=after, inline=False)
                     embed.set_author(name=before, icon_url=before.avatar)
                     logs = self.bot.get_channel(config.log_channel)
                     await logs.send(embed=embed)
