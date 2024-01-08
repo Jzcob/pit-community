@@ -245,7 +245,7 @@ class punishments(commands.Cog):
     
     @app_commands.command(name="remove-timeout", description="Remove a user's timeout from the DB.")
     @app_commands.checks.has_any_role(config.administrators, config.transparent_admin, config.true_admin)
-    async def cancelTimeout(self, interaction: discord.Interaction, user: discord.Member):
+    async def removeTimeout(self, interaction: discord.Interaction, user: discord.Member):
         try:
             mod_logs = self.bot.get_channel(config.mod_log_channel)
             cursor.execute(f"SELECT * FROM timeouts WHERE user_id = {user.id}")
@@ -286,7 +286,7 @@ class punishments(commands.Cog):
         except Exception as e:
             error_channel = self.bot.get_channel(config.error_channel)
             await error_channel.send(f"Error in `/remove-warning`: {e}")
-    
+    "I added `clear-logs`, `cancel-timeout`, `remove-warning`, `remove-kick`, and `remove`ban`"
     @app_commands.command(name="remove-kick", description="Remove a user's kick from the DB.")
     @app_commands.checks.has_any_role(config.administrators, config.transparent_admin, config.true_admin)
     async def removeKick(self, interaction: discord.Interaction, user: discord.Member, kick: int):
