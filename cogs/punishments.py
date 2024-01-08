@@ -266,11 +266,14 @@ class punishments(commands.Cog):
     @app_commands.checks.has_any_role(config.moderator, config.administrators, config.transparent_admin, config.true_admin)
     async def cancelTimeout(self, interaction: discord.Interaction, user: discord.Member):
         try:
-            await user.timeout(td(seconds=1), reason="Timeout cancelled")
-            await interaction.response.send_message(f"Cancelled timeout for {user.mention}", ephemeral=True)
-            embed = discord.Embed(title=f"Cancelled timeout for {user.name}", description=f"Staff: {interaction.user.mention}", color=discord.Color.green())
-            mod_logs = self.bot.get_channel(config.mod_log_channel)
-            await mod_logs.send(embed=embed)
+            if user.is_timed_out():
+                await user.timeout(td(seconds=1), reason="Timeout cancelled")
+                await interaction.response.send_message(f"Cancelled timeout for {user.mention}", ephemeral=True)
+                embed = discord.Embed(title=f"Cancelled timeout for {user.name}", description=f"Staff: {interaction.user.mention}", color=discord.Color.green())
+                mod_logs = self.bot.get_channel(config.mod_log_channel)
+                await mod_logs.send(embed=embed)
+            else:
+                await interaction.response.send_message(f"{user.name} isn't timed out!", ephemeral=True)
         except Exception as e:
             error_channel = self.bot.get_channel(config.error_channel)
             await error_channel.send(f"Error in `/cancel-timeout`: {e}")
