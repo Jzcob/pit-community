@@ -243,6 +243,117 @@ class punishments(commands.Cog):
             error_channel = self.bot.get_channel(config.error_channel)
             await error_channel.send(f"Error in `/ban`: {e}")
     
+    @app_commands.command(name="remove-timeout", description="Remove a user's timeout from the DB.")
+    @app_commands.checks.has_any_role(config.administrators, config.transparent_admin, config.true_admin)
+    async def cancelTimeout(self, interaction: discord.Interaction, user: discord.Member):
+        try:
+            mod_logs = self.bot.get_channel(config.mod_log_channel)
+            cursor.execute(f"SELECT * FROM timeouts WHERE user_id = {user.id}")
+            timeouts = cursor.fetchall()
+            if len(timeouts) == 0:
+                await interaction.response.send_message(f"{user.name} doesn't have a timeout!", ephemeral=True)
+                return
+            cursor.execute(f"DELETE FROM timeouts WHERE user_id = {user.id}")
+            db.commit()
+            await interaction.response.send_message(f"Removed timeout for {user.mention}", ephemeral=True)
+            embed = discord.Embed(title=f"Removed timeout for {user.name}", description=f"Staff: {interaction.user.mention}", color=discord.Color.green())
+            await mod_logs.send(embed=embed)
+        except Exception as e:
+            error_channel = self.bot.get_channel(config.error_channel)
+            await error_channel.send(f"Error in `/cancel-timeout`: {e}")
+    
+    @app_commands.command(name="cancel-timeout", description="Cancel a user's timeout.")
+    @app_commands.checks.has_any_role(config.moderator, config.administrators, config.transparent_admin, config.true_admin)
+    async def cancelTimeout(self, interaction: discord.Interaction, user: discord.Member):
+        await user.timeout(duration=td(seconds=1), reason="Timeout cancelled")
+        await interaction.response.send_message(f"Cancelled timeout for {user.mention}", ephemeral=True)
+    
+    @app_commands.command(name="remove-warning", description="Remove a user's warning from the DB.")
+    @app_commands.checks.has_any_role(config.administrators, config.transparent_admin, config.true_admin)
+    async def removeWarning(self, interaction: discord.Interaction, user: discord.Member, warning: int):
+        try:
+            mod_logs = self.bot.get_channel(config.mod_log_channel)
+            cursor.execute(f"SELECT * FROM warnings WHERE user_id = {user.id}")
+            warnings = cursor.fetchall()
+            if len(warnings) < warning:
+                await interaction.response.send_message("Invalid warning number!", ephemeral=True)
+                return
+            cursor.execute(f"DELETE FROM warnings WHERE user_id = {user.id} AND reason = '{warnings[warning-1][1]}' AND staff_id = {warnings[warning-1][2]} AND timestamp = {warnings[warning-1][3]}")
+            db.commit()
+            await interaction.response.send_message(f"Removed warning for {user.mention}", ephemeral=True)
+            embed = discord.Embed(title=f"Removed warning for {user.name}", description=f"Staff: {interaction.user.mention}", color=discord.Color.green())
+            await mod_logs.send(embed=embed)
+        except Exception as e:
+            error_channel = self.bot.get_channel(config.error_channel)
+            await error_channel.send(f"Error in `/remove-warning`: {e}")
+    
+    @app_commands.command(name="remove-kick", description="Remove a user's kick from the DB.")
+    @app_commands.checks.has_any_role(config.administrators, config.transparent_admin, config.true_admin)
+    async def removeKick(self, interaction: discord.Interaction, user: discord.Member, kick: int):
+        try:
+            mod_logs = self.bot.get_channel(config.mod_log_channel)
+            cursor.execute(f"SELECT * FROM kicks WHERE user_id = {user.id}")
+            kicks = cursor.fetchall()
+            if len(kicks) < kick:
+                await interaction.response.send_message("Invalid kick number!", ephemeral=True)
+                return
+            cursor.execute(f"DELETE FROM kicks WHERE user_id = {user.id} AND reason = '{kicks[kick-1][1]}' AND staff_id = {kicks[kick-1][2]} AND timestamp = {kicks[kick-1][3]}")
+            db.commit()
+            await interaction.response.send_message(f"Removed kick for {user.mention}", ephemeral=True)
+            embed = discord.Embed(title=f"Removed kick for {user.name}", description=f"Staff: {interaction.user.mention}", color=discord.Color.green())
+            await mod_logs.send(embed=embed)
+        except Exception as e:
+            error_channel = self.bot.get_channel(config.error_channel)
+            await error_channel.send(f"Error in `/remove-kick`: {e}")
+    
+    @app_commands.command(name="remove-ban", description="Remove a user's ban from the DB.")
+    @app_commands.checks.has_any_role(config.administrators, config.transparent_admin, config.true_admin)
+    async def removeBan(self, interaction: discord.Interaction, user: discord.Member, ban: int):
+        try:
+            mod_logs = self.bot.get_channel(config.mod_log_channel)
+            cursor.execute(f"SELECT * FROM bans WHERE user_id = {user.id}")
+            bans = cursor.fetchall()
+            if len(bans) < ban:
+                await interaction.response.send_message("Invalid ban number!", ephemeral=True)
+                return
+            cursor.execute(f"DELETE FROM bans WHERE user_id = {user.id} AND reason = '{bans[ban-1][1]}' AND staff_id = {bans[ban-1][2]} AND timestamp = {bans[ban-1][3]}")
+            db.commit()
+            await interaction.response.send_message(f"Removed ban for {user.mention}", ephemeral=True)
+            embed = discord.Embed(title=f"Removed ban for {user.name}", description=f"Staff: {interaction.user.mention}", color=discord.Color.green())
+            await mod_logs.send(embed=embed)
+        except Exception as e:
+            error_channel = self.bot.get_channel(config.error_channel)
+            await error_channel.send(f"Error in `/remove-ban`: {e}")
+    
+    @app_commands.command(name="clear-logs", description="Clear a user's punishments.")
+    @app_commands.checks.has_any_role(config.administrators, config.transparent_admin, config.true_admin)
+    async def clearLogs(self, interaction: discord.Interaction, user: discord.Member):
+        try:
+            mod_logs = self.bot.get_channel(config.mod_log_channel)
+            cursor.execute(f"SELECT * FROM warnings WHERE user_id = {user.id}")
+            warnings = cursor.fetchall()
+            cursor.execute(f"SELECT * FROM timeouts WHERE user_id = {user.id}")
+            timeouts = cursor.fetchall()
+            cursor.execute(f"SELECT * FROM kicks WHERE user_id = {user.id}")
+            kicks = cursor.fetchall()
+            cursor.execute(f"SELECT * FROM bans WHERE user_id = {user.id}")
+            bans = cursor.fetchall()
+            if len(warnings) == 0 and len(timeouts) == 0 and len(kicks) == 0 and len(bans) == 0:
+                await interaction.response.send_message(f"{user.name} has no punishments!", ephemeral=True)
+                return
+            cursor.execute(f"DELETE FROM warnings WHERE user_id = {user.id}")
+            cursor.execute(f"DELETE FROM timeouts WHERE user_id = {user.id}")
+            cursor.execute(f"DELETE FROM kicks WHERE user_id = {user.id}")
+            cursor.execute(f"DELETE FROM bans WHERE user_id = {user.id}")
+            db.commit()
+            await interaction.response.send_message(f"Cleared logs for {user.mention}", ephemeral=True)
+            embed = discord.Embed(title=f"Cleared logs for {user.name}", description=f"Staff: {interaction.user.mention}", color=discord.Color.green())
+            await mod_logs.send(embed=embed)
+        except Exception as e:
+            error_channel = self.bot.get_channel(config.error_channel)
+            await error_channel.send(f"Error in `/clear-logs`: {e}")
+
+
     @app_commands.command(name="logs", description="View a user's punishments.")
     @app_commands.checks.has_any_role(config.staff)
     async def logs(self, interaction: discord.Interaction, user: discord.Member):
