@@ -18,7 +18,6 @@ class TicketsModal(discord.ui.Modal, title="Ticket - Pit Community"):
             return await interaction.response.send_message(content="You already have a ticket open!", ephemeral=True)
         try:
             discord_user = interaction.user
-            ticketForum = interaction.client.get_channel(config.ticketForum)
             staffPing = discord.utils.get(interaction.user.guild.roles, id=config.staffTicketPing)
             try:
                 overwrites = {
