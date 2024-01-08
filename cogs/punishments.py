@@ -245,22 +245,22 @@ class punishments(commands.Cog):
     
     @app_commands.command(name="remove-timeout", description="Remove a user's timeout from the DB.")
     @app_commands.checks.has_any_role(config.administrators, config.transparent_admin, config.true_admin)
-    async def removeTimeout(self, interaction: discord.Interaction, user: discord.Member):
+    async def removeTimeout(self, interaction: discord.Interaction, user: discord.Member, timeout: int):
         try:
             mod_logs = self.bot.get_channel(config.mod_log_channel)
             cursor.execute(f"SELECT * FROM timeouts WHERE user_id = {user.id}")
             timeouts = cursor.fetchall()
-            if len(timeouts) == 0:
-                await interaction.response.send_message(f"{user.name} doesn't have a timeout!", ephemeral=True)
+            if len(timeouts) < timeout:
+                await interaction.response.send_message("Invalid timeout number!", ephemeral=True)
                 return
-            cursor.execute(f"DELETE FROM timeouts WHERE user_id = {user.id}")
+            cursor.execute(f"DELETE FROM timeouts WHERE user_id = {user.id} AND reason = '{timeouts[timeout-1][1]}' AND staff_id = {timeouts[timeout-1][2]} AND time = '{timeouts[timeout-1][3]}' AND timestamp = {timeouts[timeout-1][4]}")
             db.commit()
             await interaction.response.send_message(f"Removed timeout for {user.mention}", ephemeral=True)
             embed = discord.Embed(title=f"Removed timeout for {user.name}", description=f"Staff: {interaction.user.mention}", color=discord.Color.green())
             await mod_logs.send(embed=embed)
         except Exception as e:
             error_channel = self.bot.get_channel(config.error_channel)
-            await error_channel.send(f"Error in `/cancel-timeout`: {e}")
+            await error_channel.send(f"Error in `/remove-timeout`: {e}")
     
     @app_commands.command(name="cancel-timeout", description="Cancel a user's timeout.")
     @app_commands.checks.has_any_role(config.moderator, config.administrators, config.transparent_admin, config.true_admin)
