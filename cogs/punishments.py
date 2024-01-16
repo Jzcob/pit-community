@@ -79,11 +79,16 @@ class punishments(commands.Cog):
     
     @app_commands.command(name="trade-warn", description="Warn a user that isnt following the trade rules.")
     @app_commands.checks.has_any_role(config.staff)
-    async def tradeWarn(self, interaction: discord.Interaction, user: discord.Member):
+    async def tradeWarn(self, interaction: discord.Interaction, user: discord.Member, msgid: str):
         reason = "TRADE WARN"
         today = dt.now()
         timestamp = dt.timestamp(today)
+        id = int(msgid)
+        message = await interaction.channel.fetch_message(id)
         try:
+            if message.author.id != user.id:
+                await interaction.response.send_message("That message isn't from that user!", ephemeral=True)
+                return
             if user.id == interaction.user.id:
                 await interaction.response.send_message("You can't warn yourself!", ephemeral=True)
                 return
@@ -102,6 +107,7 @@ class punishments(commands.Cog):
             embed = discord.Embed(title=f"Trade Warned {user.name}", description=f"Reason: {reason}\nStaff: {interaction.user.mention}", color=discord.Color.red())
             cantTrade = discord.utils.get(user.guild.roles, id=797912815280324681)
             await user.add_roles(cantTrade)
+            await message.delete()
             await interaction.response.send_message(embed=embed, ephemeral=True)
             await mod_logs.send(embed=embed)
         except Exception as e:
