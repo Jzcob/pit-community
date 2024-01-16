@@ -106,10 +106,12 @@ class punishments(commands.Cog):
             db.commit()
             embed = discord.Embed(title=f"Trade Warned {user.name}", description=f"Reason: {reason}\nStaff: {interaction.user.mention}", color=discord.Color.red())
             cantTrade = discord.utils.get(user.guild.roles, id=797912815280324681)
+            punishments = self.bot.get_channel(461967634905432065)
             await user.add_roles(cantTrade)
             await message.delete()
             await interaction.response.send_message(embed=embed, ephemeral=True)
-            await mod_logs.send(content=f"`{message.content}`",embed=embed)
+            await punishments.send(f"{user.mention} has been trade warned here is the context of the message that was trade warned:\n`{message.content}`")
+            await mod_logs.send(embed=embed)
         except Exception as e:
             error_channel = self.bot.get_channel(config.error_channel)
             await error_channel.send(f"Error in `/trade-warn`: {e}")
