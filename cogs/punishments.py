@@ -109,7 +109,7 @@ class punishments(commands.Cog):
             await user.add_roles(cantTrade)
             await message.delete()
             await interaction.response.send_message(embed=embed, ephemeral=True)
-            await mod_logs.send(embed=embed)
+            await mod_logs.send(content=f"`{message.content}`",embed=embed)
         except Exception as e:
             error_channel = self.bot.get_channel(config.error_channel)
             await error_channel.send(f"Error in `/trade-warn`: {e}")
