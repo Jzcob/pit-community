@@ -110,7 +110,7 @@ class punishments(commands.Cog):
             await user.add_roles(cantTrade)
             await message.delete()
             await interaction.response.send_message(embed=embed, ephemeral=True)
-            await punishments.send(f"{user.mention} has been trade warned here is the context of the message that was trade warned:\n`{message.content}`")
+            await punishments.send(f"{user.mention} has been trade warned here is the context of the message:\n`{message.content}`")
             await mod_logs.send(embed=embed)
         except Exception as e:
             error_channel = self.bot.get_channel(config.error_channel)
