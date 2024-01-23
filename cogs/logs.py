@@ -530,6 +530,13 @@ class logs(commands.Cog):
                 logs = self.bot.get_channel(config.log_channel)
                 await logs.send(embed=embed)
             except Exception as e:
+                if str(e).find("Must be 1024 or fewer in length.") != -1:
+                    logs = self.bot.get_channel(config.log_channel)
+                    embed = discord.Embed(title="Message Edited", description=f"Message from {before.author.mention} edited in {before.channel.mention}.", color=0x00ff00)
+                    embed.add_field(name="Before", value="MESSAGE TOO LONG", inline=False)
+                    embed.add_field(name="After", value="MESSAGE TOO LONG", inline=False)
+                    embed.set_author(name=before.author.name, icon_url=before.author.avatar)
+                    await logs.send(embed=embed)
                 error_channel = self.bot.get_channel(config.error_channel)
                 await error_channel.send(f"Error in on_message_edit: {e}")
         
