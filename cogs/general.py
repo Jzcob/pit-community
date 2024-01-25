@@ -103,6 +103,18 @@ class general(commands.Cog):
             error_channel = self.bot.get_channel(config.error_channel)
             await error_channel.send(f"```Error in `/edit-embed`\n{e}\n```")
     
+    @app_commands.command(name="avatar", description="Get a users avatar.")
+    async def avatar(self, interaction: discord.Interaction, user: discord.User=None):
+        try:
+            if user == None:
+                user = interaction.user
+            embed = discord.Embed(title=f"{user.name}'s avatar", color=0x00ff00)
+            embed.set_image(url=user.display_avatar)
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+        except Exception as e:
+            error_channel = self.bot.get_channel(config.error_channel)
+            await error_channel.send(f"```Error in `/avatar`\n{e}\n```")
+    
     @app_commands.command(name="who-is", description="Get users in-game name.")
     @app_commands.checks.has_any_role(config.moderator, config.administrators, config.transparent_admin, config.true_admin)
     async def whoIs(self, interaction: discord.Interaction, user: discord.User):
