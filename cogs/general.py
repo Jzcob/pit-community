@@ -110,7 +110,7 @@ class general(commands.Cog):
                 user = interaction.user
             embed = discord.Embed(title=f"{user.name}'s avatar", color=0x00ff00)
             embed.set_image(url=user.display_avatar)
-            await interaction.response.send_message(embed=embed, ephemeral=True)
+            await interaction.response.send_message(embed=embed)
         except Exception as e:
             error_channel = self.bot.get_channel(config.error_channel)
             await error_channel.send(f"```Error in `/avatar`\n{e}\n```")
