@@ -80,7 +80,7 @@ class punishments(commands.Cog):
             except:
                 await mod_logs.send(f"Failed to send DM to {user.mention} ({user.id})")
             await interaction.response.send_message(embed=initialEmbed, ephemeral=True)
-            await punishments.send(content=f"Warned {user.mention}", attachments=evidence)
+            await punishments.send(content=f"Warned {user.mention}", attachment=evidence)
             await mod_logs.send(embed=embed)
         except Exception as e:
             error_channel = self.bot.get_channel(config.error_channel)
