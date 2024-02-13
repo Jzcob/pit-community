@@ -30,6 +30,8 @@ db = mysql.connector.connect(
 #unban - jr_moderator
 #logs-clear admin
 
+punishment = 461967634905432065
+
 
 def is_staff(member: discord.Member):
     return discord.utils.get(member.roles, id=config.staff)
@@ -63,19 +65,22 @@ class punishments(commands.Cog):
                 await interaction.response.send_message("You can't warn staff!", ephemeral=True)
                 return
             mod_logs = self.bot.get_channel(config.mod_log_channel)
+            punishments = self.bot.get_channel(config.punishment)
             cursor.execute(f"INSERT INTO warnings (user_id, reason, staff_id, timestamp) VALUES ({user.id}, '{reason}', {interaction.user.id}, {int(timestamp)})")
             db.commit()
+            initialEmbed = discord.Embed(title=f"Warned {user.name}", description=f"Reason: {reason}\nStaff: {interaction.user.mention}", color=discord.Color.red())
             embed = discord.Embed(title=f"Warned {user.name}", description=f"Reason: {reason}\nStaff: {interaction.user.mention}", color=discord.Color.red())
             userEmbed = discord.Embed(title=f"You were warned in {interaction.guild.name} ", description=f"Reason: {reason}", color=discord.Color.red())
             if evidence is not None:
-                embed.set_image(url=evidence.url)
+                initialEmbed.set_image(url=evidence.url)
             else:
                 pass
             try:
                 await user.send(embed=userEmbed)
             except:
                 await mod_logs.send(f"Failed to send DM to {user.mention} ({user.id})")
-            await interaction.response.send_message(embed=embed, ephemeral=True)
+            await interaction.response.send_message(embed=initialEmbed, ephemeral=True)
+            await punishments.send(content=f"Warned {user.mention}", attachments=evidence)
             await mod_logs.send(embed=embed)
         except Exception as e:
             error_channel = self.bot.get_channel(config.error_channel)
@@ -151,7 +156,8 @@ class punishments(commands.Cog):
                 await interaction.response.send_message("You can't timeout staff!", ephemeral=True)
                 return
             mod_logs = self.bot.get_channel(config.mod_log_channel)
-            
+            punishments = self.bot.get_channel(config.punishment)
+            initialEmbed = discord.Embed(title=f"Timed out {user.name}", description=f"Reason: {reason}\nStaff: {interaction.user.mention}\nDuration: {duration.name}", color=discord.Color.red())
             embed = discord.Embed(title=f"Timed out {user.name}", description=f"Reason: {reason}\nStaff: {interaction.user.mention}\nDuration: {duration.name}", color=discord.Color.red())
             userEmbed = discord.Embed(title=f"You were timed out in {interaction.guild.name} ", description=f"Reason: {reason}\nDuration: {duration.name}", color=discord.Color.red())
             if duration.value == "15m":
@@ -174,19 +180,19 @@ class punishments(commands.Cog):
                 punishment_duration = td(weeks=4)
             else:
                 return await interaction.response.send_message("Invalid duration!", ephemeral=True)
-            
             await user.timeout(punishment_duration, reason=reason)
             cursor.execute(f"INSERT INTO timeouts (user_id, reason, staff_id, time, timestamp) VALUES ({user.id}, '{reason}', {interaction.user.id}, '{duration.name}', {int(timestamp)})")
             db.commit()
             if evidence is not None:
-                embed.set_image(url=evidence.url)
+                initialEmbed.set_image(url=evidence.url)
             else:
                 pass
             try:
                 await user.send(embed=userEmbed)
             except:
                 await mod_logs.send(f"Failed to send DM to {user.mention} ({user.id})")
-            await interaction.response.send_message(embed=embed, ephemeral=True)
+            await interaction.response.send_message(embed=initialEmbed, ephemeral=True)
+            await punishments.send(content=f"Timed out {user.mention}", attachments=evidence)
             await mod_logs.send(embed=embed)
         except Exception as e:
             error_channel = self.bot.get_channel(config.error_channel)
@@ -209,10 +215,12 @@ class punishments(commands.Cog):
                 await interaction.response.send_message("You can't kick staff!", ephemeral=True)
                 return
             mod_logs = self.bot.get_channel(config.mod_log_channel)
+            punishments = self.bot.get_channel(config.punishment)
+            initialEmbed = discord.Embed(title=f"Kicked {user.name}", description=f"Reason: {reason}\nStaff: {interaction.user.mention}", color=discord.Color.red())
             embed = discord.Embed(title=f"Kicked {user.name}", description=f"Reason: {reason}\nStaff: {interaction.user.mention}", color=discord.Color.red())
             userEmbed = discord.Embed(title=f"You were kicked from {interaction.guild.name} ", description=f"Reason: {reason}", color=discord.Color.red())
             if evidence is not None:
-                embed.set_image(url=evidence.url)
+                initialEmbed.set_image(url=evidence.url)
             else:
                 pass
             try:
@@ -222,7 +230,8 @@ class punishments(commands.Cog):
             await user.kick(reason=reason)
             cursor.execute(f"INSERT INTO kicks (user_id, reason, staff_id) VALUES ({user.id}, '{reason}', {interaction.user.id})")
             db.commit()
-            await interaction.response.send_message(embed=embed, ephemeral=True)
+            await interaction.response.send_message(embed=initialEmbed, ephemeral=True)
+            await punishments.send(content=f"Kicked {user.mention}", attachments=evidence)
             await mod_logs.send(embed=embed)
         except Exception as e:
             error_channel = self.bot.get_channel(config.error_channel)
@@ -247,10 +256,12 @@ class punishments(commands.Cog):
                 await interaction.response.send_message("You can't ban staff!", ephemeral=True)
                 return
             mod_logs = self.bot.get_channel(config.mod_log_channel)
+            punishments = self.bot.get_channel(config.punishment)
+            initialEmbed = discord.Embed(title=f"Banned {user.name}", description=f"Reason: {reason}\nStaff: {interaction.user.mention}", color=discord.Color.red())
             embed = discord.Embed(title=f"Banned {user.name}", description=f"Reason: {reason}\nStaff: {interaction.user.mention}", color=discord.Color.red())
             userEmbed = discord.Embed(title=f"You were banned from {interaction.guild.name} ", description=f"Reason: {reason}", color=discord.Color.red())
             if evidence is not None:
-                embed.set_image(url=evidence.url)
+                initialEmbed.set_image(url=evidence.url)
             else:
                 pass
             try:
@@ -260,7 +271,8 @@ class punishments(commands.Cog):
             await user.ban(reason=reason)
             cursor.execute(f"INSERT INTO bans (user_id, reason, staff_id, timestamp) VALUES ({user.id}, '{reason}', {interaction.user.id}, {int(timestamp)})")
             db.commit()
-            await interaction.response.send_message(embed=embed, ephemeral=True)
+            await interaction.response.send_message(embed=initialEmbed, ephemeral=True)
+            await punishments.send(content=f"Banned {user.mention}", attachments=evidence)
             await mod_logs.send(embed=embed)
         except Exception as e:
             error_channel = self.bot.get_channel(config.error_channel)
