@@ -30,7 +30,7 @@ db = mysql.connector.connect(
 #unban - jr_moderator
 #logs-clear admin
 
-punishment = 461967634905432065
+
 
 
 def is_staff(member: discord.Member):
@@ -65,7 +65,7 @@ class punishments(commands.Cog):
                 await interaction.response.send_message("You can't warn staff!", ephemeral=True)
                 return
             mod_logs = self.bot.get_channel(config.mod_log_channel)
-            punishments = self.bot.get_channel(config.punishment)
+            punishments = self.bot.get_channel(config.punishments)
             cursor.execute(f"INSERT INTO warnings (user_id, reason, staff_id, timestamp) VALUES ({user.id}, '{reason}', {interaction.user.id}, {int(timestamp)})")
             db.commit()
             initialEmbed = discord.Embed(title=f"Warned {user.name}", description=f"Reason: {reason}\nStaff: {interaction.user.mention}", color=discord.Color.red())
@@ -156,7 +156,7 @@ class punishments(commands.Cog):
                 await interaction.response.send_message("You can't timeout staff!", ephemeral=True)
                 return
             mod_logs = self.bot.get_channel(config.mod_log_channel)
-            punishments = self.bot.get_channel(config.punishment)
+            punishments = self.bot.get_channel(config.punishments)
             initialEmbed = discord.Embed(title=f"Timed out {user.name}", description=f"Reason: {reason}\nStaff: {interaction.user.mention}\nDuration: {duration.name}", color=discord.Color.red())
             embed = discord.Embed(title=f"Timed out {user.name}", description=f"Reason: {reason}\nStaff: {interaction.user.mention}\nDuration: {duration.name}", color=discord.Color.red())
             userEmbed = discord.Embed(title=f"You were timed out in {interaction.guild.name} ", description=f"Reason: {reason}\nDuration: {duration.name}", color=discord.Color.red())
@@ -215,7 +215,7 @@ class punishments(commands.Cog):
                 await interaction.response.send_message("You can't kick staff!", ephemeral=True)
                 return
             mod_logs = self.bot.get_channel(config.mod_log_channel)
-            punishments = self.bot.get_channel(config.punishment)
+            punishments = self.bot.get_channel(config.punishments)
             initialEmbed = discord.Embed(title=f"Kicked {user.name}", description=f"Reason: {reason}\nStaff: {interaction.user.mention}", color=discord.Color.red())
             embed = discord.Embed(title=f"Kicked {user.name}", description=f"Reason: {reason}\nStaff: {interaction.user.mention}", color=discord.Color.red())
             userEmbed = discord.Embed(title=f"You were kicked from {interaction.guild.name} ", description=f"Reason: {reason}", color=discord.Color.red())
@@ -256,7 +256,7 @@ class punishments(commands.Cog):
                 await interaction.response.send_message("You can't ban staff!", ephemeral=True)
                 return
             mod_logs = self.bot.get_channel(config.mod_log_channel)
-            punishments = self.bot.get_channel(config.punishment)
+            punishments = self.bot.get_channel(config.punishments)
             initialEmbed = discord.Embed(title=f"Banned {user.name}", description=f"Reason: {reason}\nStaff: {interaction.user.mention}", color=discord.Color.red())
             embed = discord.Embed(title=f"Banned {user.name}", description=f"Reason: {reason}\nStaff: {interaction.user.mention}", color=discord.Color.red())
             userEmbed = discord.Embed(title=f"You were banned from {interaction.guild.name} ", description=f"Reason: {reason}", color=discord.Color.red())
