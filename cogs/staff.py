@@ -17,7 +17,7 @@ class Staff(commands.Cog):
         embed.add_field(name="Owner", value="<@349719693264814092>", inline=True)
         embed.add_field(name="Admin", value="<@306570665694199809>", inline=True)
         embed.add_field(name="Developer", value=f"<@920797181034778655>", inline=True)
-        embed.add_field(name="Moderator's", value="<@238762194320228352><@403705883097563139><@615124610379284481><@422512146065391625>", inline=True)
+        embed.add_field(name="Moderator's", value="<@238762194320228352> <@403705883097563139> <@615124610379284481> <@422512146065391625>", inline=True)
         embed.add_field(name="Other Staff", value="<@631168537137905684>", inline=True)
         await interaction.response.send_message(embed=embed)
 
