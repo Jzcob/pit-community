@@ -22,4 +22,4 @@ class Staff(commands.Cog):
         await interaction.response.send_message(embed=embed)
 
 async def setup(bot):
-    bot.add_cog(Staff(bot), guilds=[discord.Object(id=config.server_id)])
+    await bot.add_cog(Staff(bot), guilds=[discord.Object(id=config.server_id)])
