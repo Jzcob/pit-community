@@ -9,7 +9,7 @@ class Staff(commands.Cog):
     
     @commands.Cog.listener()
     async def on_ready(self):
-        print('Staff Cog is loaded')
+        print('LOADED: `staff.py`')
     
     @app_commands.command(name="staff", description="Get the staff of the server")
     async def staff(self, interaction: discord.Interaction):
