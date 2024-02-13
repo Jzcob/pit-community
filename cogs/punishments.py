@@ -73,6 +73,7 @@ class punishments(commands.Cog):
             userEmbed = discord.Embed(title=f"You were warned in {interaction.guild.name} ", description=f"Reason: {reason}", color=discord.Color.red())
             if evidence is not None:
                 initialEmbed.set_image(url=evidence.url)
+                await punishments.send(content=f"Warned {user.mention}", attachment=evidence)
             else:
                 pass
             try:
@@ -80,7 +81,7 @@ class punishments(commands.Cog):
             except:
                 await mod_logs.send(f"Failed to send DM to {user.mention} ({user.id})")
             await interaction.response.send_message(embed=initialEmbed, ephemeral=True)
-            await punishments.send(content=f"Warned {user.mention}", attachment=evidence)
+            
             await mod_logs.send(embed=embed)
         except Exception as e:
             error_channel = self.bot.get_channel(config.error_channel)
