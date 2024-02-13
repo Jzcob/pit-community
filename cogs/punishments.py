@@ -73,7 +73,7 @@ class punishments(commands.Cog):
             userEmbed = discord.Embed(title=f"You were warned in {interaction.guild.name} ", description=f"Reason: {reason}", color=discord.Color.red())
             if evidence is not None:
                 initialEmbed.set_image(url=evidence.url)
-                await punishments.send(content=f"Warned {user.mention}", attachment=evidence)
+                await punishments.send(content=f"Warned {user.mention}", file=evidence)
             else:
                 pass
             try:
