@@ -46,7 +46,7 @@ class punishments(commands.Cog):
     
     @app_commands.command(name="warn", description="Warn a user.")
     @app_commands.checks.has_any_role(config.staff)
-    async def warn(self, interaction: discord.Interaction, user: discord.Member, *, reason: str):
+    async def warn(self, interaction: discord.Interaction, user: discord.Member, *, reason: str, evidence: discord.Attachment=None):
         today = dt.now()
         timestamp = dt.timestamp(today)
         try:
@@ -67,6 +67,10 @@ class punishments(commands.Cog):
             db.commit()
             embed = discord.Embed(title=f"Warned {user.name}", description=f"Reason: {reason}\nStaff: {interaction.user.mention}", color=discord.Color.red())
             userEmbed = discord.Embed(title=f"You were warned in {interaction.guild.name} ", description=f"Reason: {reason}", color=discord.Color.red())
+            if evidence is not None:
+                embed.set_image(url=evidence.url)
+            else:
+                pass
             try:
                 await user.send(embed=userEmbed)
             except:
@@ -106,11 +110,10 @@ class punishments(commands.Cog):
             db.commit()
             embed = discord.Embed(title=f"Trade Warned {user.name}", description=f"Reason: {reason}\nStaff: {interaction.user.mention}", color=discord.Color.red())
             cantTrade = discord.utils.get(user.guild.roles, id=797912815280324681)
-            punishments = self.bot.get_channel(461967634905432065)
+            embed.add_field(name="Message", value=message.content, inline=False)
             await user.add_roles(cantTrade)
             await message.delete()
             await interaction.response.send_message(embed=embed, ephemeral=True)
-            await punishments.send(f"{user.mention} has been trade warned here is the context of the message:\n```{message.content}```")
             await mod_logs.send(embed=embed)
         except Exception as e:
             error_channel = self.bot.get_channel(config.error_channel)
@@ -130,7 +133,7 @@ class punishments(commands.Cog):
         discord.app_commands.Choice(name='1 month', value='1m'),
         ])
     @app_commands.checks.has_any_role(config.staff)
-    async def timeout(self, interaction: discord.Interaction, user: discord.Member, duration: discord.app_commands.Choice[str], *, reason: str):
+    async def timeout(self, interaction: discord.Interaction, user: discord.Member, duration: discord.app_commands.Choice[str], *, reason: str, evidence: discord.Attachment=None):
         mod_logs = self.bot.get_channel(config.mod_log_channel)
         today = dt.today()
         timestamp = dt.timestamp(today)
@@ -175,6 +178,10 @@ class punishments(commands.Cog):
             await user.timeout(punishment_duration, reason=reason)
             cursor.execute(f"INSERT INTO timeouts (user_id, reason, staff_id, time, timestamp) VALUES ({user.id}, '{reason}', {interaction.user.id}, '{duration.name}', {int(timestamp)})")
             db.commit()
+            if evidence is not None:
+                embed.set_image(url=evidence.url)
+            else:
+                pass
             try:
                 await user.send(embed=userEmbed)
             except:
@@ -187,7 +194,7 @@ class punishments(commands.Cog):
     
     @app_commands.command(name="kick", description="Kick a user.")
     @app_commands.checks.has_any_role(config.jr_moderator, config.moderator, config.administrators, config.transparent_admin, config.true_admin)
-    async def kick(self, interaction: discord.Interaction, user: discord.Member, *, reason: str):
+    async def kick(self, interaction: discord.Interaction, user: discord.Member, *, reason: str, evidence: discord.Attachment=None):
         try:
             if user.id == interaction.user.id:
                 await interaction.response.send_message("You can't kick yourself!", ephemeral=True)
@@ -204,6 +211,10 @@ class punishments(commands.Cog):
             mod_logs = self.bot.get_channel(config.mod_log_channel)
             embed = discord.Embed(title=f"Kicked {user.name}", description=f"Reason: {reason}\nStaff: {interaction.user.mention}", color=discord.Color.red())
             userEmbed = discord.Embed(title=f"You were kicked from {interaction.guild.name} ", description=f"Reason: {reason}", color=discord.Color.red())
+            if evidence is not None:
+                embed.set_image(url=evidence.url)
+            else:
+                pass
             try:
                 await user.send(embed=userEmbed)
             except:
@@ -219,7 +230,7 @@ class punishments(commands.Cog):
     
     @app_commands.command(name="ban", description="Ban a user.")
     @app_commands.checks.has_any_role(config.moderator, config.administrators, config.transparent_admin, config.true_admin)
-    async def ban(self, interaction: discord.Interaction, user: discord.Member, *, reason: str):
+    async def ban(self, interaction: discord.Interaction, user: discord.Member, *, reason: str, evidence: discord.Attachment=None):
         today = dt.today()
         timestamp = dt.timestamp(today)
         try:
@@ -238,6 +249,10 @@ class punishments(commands.Cog):
             mod_logs = self.bot.get_channel(config.mod_log_channel)
             embed = discord.Embed(title=f"Banned {user.name}", description=f"Reason: {reason}\nStaff: {interaction.user.mention}", color=discord.Color.red())
             userEmbed = discord.Embed(title=f"You were banned from {interaction.guild.name} ", description=f"Reason: {reason}", color=discord.Color.red())
+            if evidence is not None:
+                embed.set_image(url=evidence.url)
+            else:
+                pass
             try:
                 await user.send(embed=userEmbed)
             except:
