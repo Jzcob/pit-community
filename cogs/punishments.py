@@ -5,6 +5,7 @@ from datetime import datetime as dt
 from datetime import timedelta as td
 import mysql.connector
 import config
+import traceback
 
 
 import os
@@ -72,7 +73,7 @@ class punishments(commands.Cog):
             embed = discord.Embed(title=f"Warned {user.name}", description=f"Reason: {reason}\nStaff: {interaction.user.mention}", color=discord.Color.red())
             userEmbed = discord.Embed(title=f"You were warned in {interaction.guild.name} ", description=f"Reason: {reason}", color=discord.Color.red())
             if evidence is not None:
-                initialEmbed.set_image(url=evidence.url)
+                initialEmbed.set_image(url=evidence)
                 await punishments.send(content=f"Warned {user.mention}", file=evidence)
             else:
                 pass
@@ -83,9 +84,10 @@ class punishments(commands.Cog):
             await interaction.response.send_message(embed=initialEmbed, ephemeral=True)
             
             await mod_logs.send(embed=embed)
-        except Exception as e:
+        except:
             error_channel = self.bot.get_channel(config.error_channel)
-            await error_channel.send(f"Error in `/warn`: {e}")
+            string = f"{traceback.format_exc()}"
+            await error_channel.send(f"Error in `/warn`: {string}")
     
     @app_commands.command(name="trade-warn", description="Warn a user that isnt following the trade rules.")
     @app_commands.checks.has_any_role(config.staff)
@@ -185,7 +187,7 @@ class punishments(commands.Cog):
             cursor.execute(f"INSERT INTO timeouts (user_id, reason, staff_id, time, timestamp) VALUES ({user.id}, '{reason}', {interaction.user.id}, '{duration.name}', {int(timestamp)})")
             db.commit()
             if evidence is not None:
-                initialEmbed.set_image(url=evidence.url)
+                initialEmbed.set_image(url=evidence)
             else:
                 pass
             try:
@@ -195,9 +197,10 @@ class punishments(commands.Cog):
             await interaction.response.send_message(embed=initialEmbed, ephemeral=True)
             await punishments.send(content=f"Timed out {user.mention}", attachments=evidence)
             await mod_logs.send(embed=embed)
-        except Exception as e:
+        except:
             error_channel = self.bot.get_channel(config.error_channel)
-            await error_channel.send(f"Error in `/timeout`: {e}")
+            string = f"{traceback.format_exc()}"
+            await error_channel.send(f"Error in `/timeout`: {string}")
     
     @app_commands.command(name="kick", description="Kick a user.")
     @app_commands.checks.has_any_role(config.jr_moderator, config.moderator, config.administrators, config.transparent_admin, config.true_admin)
@@ -221,7 +224,7 @@ class punishments(commands.Cog):
             embed = discord.Embed(title=f"Kicked {user.name}", description=f"Reason: {reason}\nStaff: {interaction.user.mention}", color=discord.Color.red())
             userEmbed = discord.Embed(title=f"You were kicked from {interaction.guild.name} ", description=f"Reason: {reason}", color=discord.Color.red())
             if evidence is not None:
-                initialEmbed.set_image(url=evidence.url)
+                initialEmbed.set_image(url=evidence)
             else:
                 pass
             try:
@@ -234,9 +237,10 @@ class punishments(commands.Cog):
             await interaction.response.send_message(embed=initialEmbed, ephemeral=True)
             await punishments.send(content=f"Kicked {user.mention}", attachments=evidence)
             await mod_logs.send(embed=embed)
-        except Exception as e:
+        except:
             error_channel = self.bot.get_channel(config.error_channel)
-            await error_channel.send(f"Error in `/kick`: {e}")
+            string = f"{traceback.format_exc()}"
+            await error_channel.send(f"Error in `/kick`: {string}")
     
     @app_commands.command(name="ban", description="Ban a user.")
     @app_commands.checks.has_any_role(config.moderator, config.administrators, config.transparent_admin, config.true_admin)
@@ -262,7 +266,7 @@ class punishments(commands.Cog):
             embed = discord.Embed(title=f"Banned {user.name}", description=f"Reason: {reason}\nStaff: {interaction.user.mention}", color=discord.Color.red())
             userEmbed = discord.Embed(title=f"You were banned from {interaction.guild.name} ", description=f"Reason: {reason}", color=discord.Color.red())
             if evidence is not None:
-                initialEmbed.set_image(url=evidence.url)
+                initialEmbed.set_image(url=evidence)
             else:
                 pass
             try:
@@ -275,10 +279,11 @@ class punishments(commands.Cog):
             await interaction.response.send_message(embed=initialEmbed, ephemeral=True)
             await punishments.send(content=f"Banned {user.mention}", attachments=evidence)
             await mod_logs.send(embed=embed)
-        except Exception as e:
+        except:
             error_channel = self.bot.get_channel(config.error_channel)
-            await error_channel.send(f"Error in `/ban`: {e}")
-    
+            string = f"{traceback.format_exc()}"
+            await error_channel.send(f"Error in `/ban`: {string}")
+
     @app_commands.command(name="remove-timeout", description="Remove a user's timeout from the DB.")
     @app_commands.checks.has_any_role(config.administrators, config.transparent_admin, config.true_admin)
     async def removeTimeout(self, interaction: discord.Interaction, user: discord.Member, timeout: int):
