@@ -195,7 +195,7 @@ class punishments(commands.Cog):
             except:
                 await mod_logs.send(f"Failed to send DM to {user.mention} ({user.id})")
             await interaction.response.send_message(embed=initialEmbed, ephemeral=True)
-            await punishments.send(content=f"Timed out {user.mention}", attachments=evidence)
+            await punishments.send(content=f"Timed out {user.mention}", file=evidence)
             await mod_logs.send(embed=embed)
         except:
             error_channel = self.bot.get_channel(config.error_channel)
@@ -235,7 +235,7 @@ class punishments(commands.Cog):
             cursor.execute(f"INSERT INTO kicks (user_id, reason, staff_id) VALUES ({user.id}, '{reason}', {interaction.user.id})")
             db.commit()
             await interaction.response.send_message(embed=initialEmbed, ephemeral=True)
-            await punishments.send(content=f"Kicked {user.mention}", attachments=evidence)
+            await punishments.send(content=f"Kicked {user.mention}", file=evidence)
             await mod_logs.send(embed=embed)
         except:
             error_channel = self.bot.get_channel(config.error_channel)
@@ -277,7 +277,7 @@ class punishments(commands.Cog):
             cursor.execute(f"INSERT INTO bans (user_id, reason, staff_id, timestamp) VALUES ({user.id}, '{reason}', {interaction.user.id}, {int(timestamp)})")
             db.commit()
             await interaction.response.send_message(embed=initialEmbed, ephemeral=True)
-            await punishments.send(content=f"Banned {user.mention}", attachments=evidence)
+            await punishments.send(content=f"Banned {user.mention}", file=evidence)
             await mod_logs.send(embed=embed)
         except:
             error_channel = self.bot.get_channel(config.error_channel)
