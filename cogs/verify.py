@@ -34,8 +34,8 @@ class verify(commands.Cog):
             msg = await interaction.original_response()
             today = datetime.now()
             timestamp = today.timestamp()
-            mojangURl = f"https://api.mojang.com/users/profiles/minecraft/{ign}"
-            response = requests.get(mojangURl)
+            hypixelUUID = requests.get(f"https://api.hypixel.net/player?key={os.getenv('api_key')}&name={ign}")
+            response = requests.get(hypixelUUID)
             uuid = response.json()["id"]
             cursor.execute(f"SELECT * FROM verified WHERE user_id = {interaction.user.id}")
             result = cursor.fetchone()

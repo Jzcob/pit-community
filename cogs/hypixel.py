@@ -24,8 +24,8 @@ class Hypixel(commands.Cog):
             await interaction.response.defer()
             msg = await interaction.original_response()
 
-            mojang = requests.get(f"https://api.mojang.com/users/profiles/minecraft/{ign}")
-            data = requests.json(mojang)
+            hypixelUUID = requests.get(f"https://api.hypixel.net/player?key={os.getenv('api_key')}&name={ign}")
+            data = requests.json(hypixelUUID)
             uuid = data['id']
             hypixel = requests.get(f"https://api.hypixel.net/player?key={os.getenv('api_key')}&uuid={uuid}")
             data = requests.json(hypixel)
