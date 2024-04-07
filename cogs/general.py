@@ -131,7 +131,7 @@ class general(commands.Cog):
             url = f"https://api.hypixel.net/player?key={api_key}&uuid={uuid}"
             response = requests.get(url)
             data = response.json()
-            ign = data["player"]["displayname"]
+            ign = data['player']['displayname']
             if result is None:
                 embed = discord.Embed(description=f"{user.mention} has not verified!", color=0x00ff00)
                 await interaction.response.send_message(embed=embed, ephemeral=True)
