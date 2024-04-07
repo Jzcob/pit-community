@@ -27,16 +27,24 @@ class hypixel(commands.Cog):
             url = f"https://api.hypixel.net/player?key={os.getenv('api_key')}&name={ign}"
             dataGet = requests.get(url)
             data = dataGet.json()
+            if data['success'] == False:
+                if data['cause'] == "You have already looked up this name recently":
+                    embed = discord.Embed(title="Hypixel Stats", description=f"**{ign}** has already been looked up recently!", color=0x00ff00)
+                    await msg.edit(embed=embed)
+                    return
+
             uuid = data['player']['uuid']
-            hypixel = requests.get(f"https://api.hypixel.net/player?key={os.getenv('api_key')}&uuid={uuid}")
-            data = requests.json(hypixel)
+            hypixel = f"https://api.hypixel.net/player?key={os.getenv('api_key')}&uuid={uuid}"
+            dataGet = requests.get(hypixel)
+            data = dataGet.json()
+            ign = data['player']['displayname']
             if data['player'] == None:
                 embed = discord.Embed(title="Hypixel Stats", description=f"**{ign}** is not a valid player!", color=0x00ff00)
                 await msg.edit(embed=embed)
                 return
             else:
                 if ign.lower() == "technoblade":
-                    embed = discord.Embed(description=f"**{ign}** 👑🐷 o7", color=0x00ff00)
+                    embed = discord.Embed(description=f"**Technoblade** 👑🐷 o7", color=0x00ff00)
                 elif ign.lower() == "jzcob":
                     embed = discord.Embed(title="Hypixel Stats", description=f"**{ign}** 👀 Oh hey thats my developer!", color=0x00ff00)
                 else:
@@ -47,20 +55,11 @@ class hypixel(commands.Cog):
                 firstLogin = data['player']['firstLogin']
                 firstLogin = datetime.datetime.fromtimestamp(firstLogin/1000.0)
                 firstLogin = firstLogin.strftime("%m/%d/%Y, %H:%M:%S")
-                lastLogin = data['player']['lastLogin']
-                lastLogin = datetime.datetime.fromtimestamp(lastLogin/1000.0)
-                lastLogin = lastLogin.strftime("%m/%d/%Y, %H:%M:%S")
-                lastLogout = data['player']['lastLogout']
-                lastLogout = datetime.datetime.fromtimestamp(lastLogout/1000.0)
-                lastLogout = lastLogout.strftime("%m/%d/%Y, %H:%M:%S")
-                hypixelURL = data['plaer']['socialMedia']['links']['HYPIXEL']
                 #https://replit.com/@Jzcob/hypixel
-                embed.author(name=f"{ign}'s Hypixel Stats", url=hypixelURL)
+                embed.set_author(name=f"{ign}'s Hypixel Stats")
                 embed.add_field(name="Network Level", value=f"{networkLevel}", inline=False)
-                embed.add_field(name="Karma", value=f"{karma}", inline=False)
+                embed.add_field(name="Karma", value=f"{karma:,}", inline=False)
                 embed.add_field(name="First Login", value=f"{firstLogin}", inline=False)
-                embed.add_field(name="Last Login", value=f"{lastLogin}", inline=False)
-                embed.add_field(name="Last Logout", value=f"{lastLogout}", inline=False)
                 await msg.edit(embed=embed)
         except:
             error_channel = self.bot.get_channel(config.error_channel)
