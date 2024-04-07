@@ -87,7 +87,7 @@ class punishments(commands.Cog):
         except:
             error_channel = self.bot.get_channel(config.error_channel)
             string = f"{traceback.format_exc()}"
-            await error_channel.send(f"Error in `/warn`: {string}")
+            await error_channel.send(f"```{string}```")
     
     @app_commands.command(name="trade-warn", description="Warn a user that isnt following the trade rules.")
     @app_commands.checks.has_any_role(config.staff)
@@ -123,9 +123,10 @@ class punishments(commands.Cog):
             await message.delete()
             await interaction.response.send_message(embed=embed, ephemeral=True)
             await mod_logs.send(embed=embed)
-        except Exception as e:
+        except:
             error_channel = self.bot.get_channel(config.error_channel)
-            await error_channel.send(f"Error in `/trade-warn`: {e}")
+            string = f"{traceback.format_exc()}"
+            await error_channel.send(f"```{string}```")
     
     @app_commands.command(name="timeout", description="Timeout a user.")
     @app_commands.describe(duration="The duration of the timeout.")
@@ -299,9 +300,10 @@ class punishments(commands.Cog):
             await interaction.response.send_message(f"Removed timeout for {user.mention}", ephemeral=True)
             embed = discord.Embed(title=f"Removed timeout for {user.name}", description=f"Staff: {interaction.user.mention}", color=discord.Color.green())
             await mod_logs.send(embed=embed)
-        except Exception as e:
+        except:
             error_channel = self.bot.get_channel(config.error_channel)
-            await error_channel.send(f"Error in `/remove-timeout`: {e}")
+            string = f"{traceback.format_exc()}"
+            await error_channel.send(f"```{string}```")
     
     @app_commands.command(name="cancel-timeout", description="Cancel a user's timeout.")
     @app_commands.checks.has_any_role(config.moderator, config.administrators, config.transparent_admin, config.true_admin)
@@ -315,9 +317,10 @@ class punishments(commands.Cog):
                 await mod_logs.send(embed=embed)
             else:
                 await interaction.response.send_message(f"{user.name} isn't timed out!", ephemeral=True)
-        except Exception as e:
+        except:
             error_channel = self.bot.get_channel(config.error_channel)
-            await error_channel.send(f"Error in `/cancel-timeout`: {e}")
+            string = f"{traceback.format_exc()}"
+            await error_channel.send(f"```{string}```")
     
     @app_commands.command(name="remove-warning", description="Remove a user's warning from the DB.")
     @app_commands.checks.has_any_role(config.administrators, config.transparent_admin, config.true_admin)
@@ -334,10 +337,11 @@ class punishments(commands.Cog):
             await interaction.response.send_message(f"Removed warning for {user.mention}", ephemeral=True)
             embed = discord.Embed(title=f"Removed warning for {user.name}", description=f"Staff: {interaction.user.mention}", color=discord.Color.green())
             await mod_logs.send(embed=embed)
-        except Exception as e:
+        except:
             error_channel = self.bot.get_channel(config.error_channel)
-            await error_channel.send(f"Error in `/remove-warning`: {e}")
-    "I added `clear-logs`, `cancel-timeout`, `remove-warning`, `remove-kick`, and `remove`ban`"
+            string = f"{traceback.format_exc()}"
+            await error_channel.send(f"```{string}```")
+
     @app_commands.command(name="remove-kick", description="Remove a user's kick from the DB.")
     @app_commands.checks.has_any_role(config.administrators, config.transparent_admin, config.true_admin)
     async def removeKick(self, interaction: discord.Interaction, user: discord.Member, kick: int):
@@ -353,9 +357,10 @@ class punishments(commands.Cog):
             await interaction.response.send_message(f"Removed kick for {user.mention}", ephemeral=True)
             embed = discord.Embed(title=f"Removed kick for {user.name}", description=f"Staff: {interaction.user.mention}", color=discord.Color.green())
             await mod_logs.send(embed=embed)
-        except Exception as e:
+        except:
             error_channel = self.bot.get_channel(config.error_channel)
-            await error_channel.send(f"Error in `/remove-kick`: {e}")
+            string = f"{traceback.format_exc()}"
+            await error_channel.send(f"```{string}```")
     
     @app_commands.command(name="remove-ban", description="Remove a user's ban from the DB.")
     @app_commands.checks.has_any_role(config.administrators, config.transparent_admin, config.true_admin)
@@ -372,9 +377,10 @@ class punishments(commands.Cog):
             await interaction.response.send_message(f"Removed ban for {user.mention}", ephemeral=True)
             embed = discord.Embed(title=f"Removed ban for {user.name}", description=f"Staff: {interaction.user.mention}", color=discord.Color.green())
             await mod_logs.send(embed=embed)
-        except Exception as e:
+        except:
             error_channel = self.bot.get_channel(config.error_channel)
-            await error_channel.send(f"Error in `/remove-ban`: {e}")
+            string = f"{traceback.format_exc()}"
+            await error_channel.send(f"```{string}```")
     
     @app_commands.command(name="clear-logs", description="Clear a user's punishments.")
     @app_commands.checks.has_any_role(config.administrators, config.transparent_admin, config.true_admin)
@@ -400,9 +406,10 @@ class punishments(commands.Cog):
             await interaction.response.send_message(f"Cleared logs for {user.mention}", ephemeral=True)
             embed = discord.Embed(title=f"Cleared logs for {user.name}", description=f"Staff: {interaction.user.mention}", color=discord.Color.green())
             await mod_logs.send(embed=embed)
-        except Exception as e:
+        except:
             error_channel = self.bot.get_channel(config.error_channel)
-            await error_channel.send(f"Error in `/clear-logs`: {e}")
+            string = f"{traceback.format_exc()}"
+            await error_channel.send(f"```{string}```")
 
 
     @app_commands.command(name="logs", description="View a user's punishments.")
@@ -456,9 +463,10 @@ class punishments(commands.Cog):
             
                 
             await interaction.response.send_message(embed=embed)
-        except Exception as e:
+        except:
             error_channel = self.bot.get_channel(config.error_channel)
-            await error_channel.send(f"Error in `/logs`: {e}")
+            string = f"{traceback.format_exc()}"
+            await error_channel.send(f"```{string}```")
     
     @app_commands.command(name="add-note", description="Add a note to a user.")
     @app_commands.checks.has_any_role(config.staff)
@@ -469,9 +477,10 @@ class punishments(commands.Cog):
             cursor.execute(f"INSERT INTO notes (user_id, note, staff_id, timestamp) VALUES ({member.id}, '{note}', {interaction.user.id}, {int(timestamp)})")
             db.commit()
             await interaction.response.send_message(f"Added note to {member.mention}", ephemeral=True)
-        except Exception as e:
+        except:
             error_channel = self.bot.get_channel(config.error_channel)
-            await error_channel.send(f"Error in `/add-note`: {e}")
+            string = f"{traceback.format_exc()}"
+            await error_channel.send(f"```{string}```")
     
     @app_commands.command(name="remove-note", description="Removes a note from a user.")
     @app_commands.checks.has_any_role(config.moderator, config.administrators, config.transparent_admin, config.true_admin)
@@ -485,9 +494,10 @@ class punishments(commands.Cog):
             cursor.execute(f"DELETE FROM notes WHERE user_id = {member.id} AND note = '{notes[note-1][1]}' AND staff_id = {notes[note-1][2]} AND timestamp = {notes[note-1][3]}")
             db.commit()
             await interaction.response.send_message(f"Removed note from {member.mention}", ephemeral=True)
-        except Exception as e:
+        except:
             error_channel = self.bot.get_channel(config.error_channel)
-            await error_channel.send(f"Error in `/remove-note`: {e}")
+            string = f"{traceback.format_exc()}"
+            await error_channel.send(f"```{string}```")
     
     @app_commands.command(name="notes", description="Shows all of a users notes.")
     @app_commands.checks.has_any_role(config.staff)
@@ -503,9 +513,10 @@ class punishments(commands.Cog):
             else:
                 embed = discord.Embed(title=f"Notes for {member.name}", description=noteString, color=discord.Color.red())
             await interaction.response.send_message(embed=embed)
-        except Exception as e:
+        except:
             error_channel = self.bot.get_channel(config.error_channel)
-            await error_channel.send(f"Error in `/notes`: {e}")
+            string = f"{traceback.format_exc()}"
+            await error_channel.send(f"```{string}```")
     
     @app_commands.command(name="unban", description="Unban a user.")
     @app_commands.checks.has_any_role(config.jr_moderator, config.moderator, config.administrators, config.transparent_admin, config.true_admin)
@@ -516,9 +527,10 @@ class punishments(commands.Cog):
             await interaction.guild.unban(user, reason=reason)
             await interaction.response.send_message(embed=embed, ephemeral=True)
             await mod_logs.send(embed=embed)
-        except Exception as e:
+        except:
             error_channel = self.bot.get_channel(config.error_channel)
-            await error_channel.send(f"Error in `/unban`: {e}")
+            string = f"{traceback.format_exc()}"
+            await error_channel.send(f"```{string}```")
 
     @app_commands.command(name="purge", description="Purge a user's messages.")
     @app_commands.describe(amount="The amount of messages to purge.")
@@ -531,9 +543,10 @@ class punishments(commands.Cog):
                 return
             await interaction.channel.purge(limit=amount+1, check=lambda m: m.author == member)
             await interaction.response.send_message(f"Purged {amount} messages from {member.mention}", ephemeral=True)
-        except Exception as e:
+        except:
             error_channel = self.bot.get_channel(config.error_channel)
-            await error_channel.send(f"Error in `/purge`: {e}")
+            string = f"{traceback.format_exc()}"
+            await error_channel.send(f"```{string}```")
 
 
 async def setup(bot):

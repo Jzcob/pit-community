@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 import config
+import traceback
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -18,9 +19,10 @@ class Help(commands.Cog):
     async def help(self, interaction: discord.Interaction):
         try:
             pass
-        except Exception as e:
+        except:
             error_channel = self.bot.get_channel(config.error_channel)
-            await error_channel.send(f"```Error in `/help`\n{e}\n```")
+            string = f"{traceback.format_exc()}"
+            await error_channel.send(f"```{string}```")
 
 async def setup(bot):
     await bot.add_cog(Help(bot))

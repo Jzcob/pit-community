@@ -33,9 +33,10 @@ class cantCount(commands.Cog):
                             error_channel = self.bot.get_channel(config.error_channel)
                             await error_channel.send(f"```Error in cantCount.py\n{e}\n```")
                     await message.delete()
-        except Exception as e:
+        except:
             error_channel = self.bot.get_channel(config.error_channel)
-            await error_channel.send(f"```Error in cantCount event\n{e}\n```")
+            string = f"{traceback.format_exc()}"
+            await error_channel.send(f"```{string}```")
 
 async def setup(bot):
     await bot.add_cog(cantCount(bot))

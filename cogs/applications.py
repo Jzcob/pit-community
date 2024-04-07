@@ -7,6 +7,7 @@ import os
 import requests
 import mysql.connector
 from dotenv import load_dotenv
+import traceback
 load_dotenv()
 api_key = os.getenv("dev_key")
 
@@ -68,9 +69,10 @@ class ApplicationModal(discord.ui.Modal, title="Staff Application", ):
             json.dump(applied, g)
             g.close()
             return
-        except Exception as e:
+        except:
             error_channel = self.bot.get_channel(config.error_channel)
-            await error_channel.send(f"Error in apply modal.\n{e}")
+            string = f"{traceback.format_exc()}"
+            await error_channel.send(f"```{string}```")
 
 class applications(commands.Cog):
     def __init__(self, bot):

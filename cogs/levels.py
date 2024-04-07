@@ -7,10 +7,9 @@ import os
 import config
 from config import level_limit as limit
 from dotenv import load_dotenv
-import asyncio
 import discord
 from discord.ext import commands
-from discord.ui import Button
+import traceback
 import time
 load_dotenv()
 
@@ -108,8 +107,6 @@ class levels(commands.Cog):
                         cursor.execute(f"UPDATE levels SET xp = {xp} WHERE user_id = {message.author.id}")
                         db.commit()
             else:
-                return
-
                 # Update the message count for the user
                 if message.author.id in self.message_per_minute:
                     count = self.message_per_minute[message.author.id] + 1
@@ -119,9 +116,10 @@ class levels(commands.Cog):
                     self.message_per_minute[message.author.id] = count
                     self.message_count[message.author.id] = int(time.time())
 
-        except Exception as e:
+        except:
             error_channel = self.bot.get_channel(config.error_channel)
-            await error_channel.send(f"```Error in `on_message` in levels.py\n{e}\n```")
+            string = f"{traceback.format_exc()}"
+            await error_channel.send(f"```{string}```")
     
     @app_commands.command(name="level", description="Shows your level")
     async def level(self, interaction: discord.Interaction, user: discord.User = None, hidden: bool=None):
@@ -138,9 +136,10 @@ class levels(commands.Cog):
                 xp = result[1]
                 embed = discord.Embed(title="Level", description=f"Level: `{level}`\nXP: `{xp}`", color=0x00ff00)
                 await interaction.response.send_message(embed=embed, ephemeral=hidden)
-        except Exception as e:
+        except:
             error_channel = self.bot.get_channel(config.error_channel)
-            await error_channel.send(f"```Error in `/level`\n{e}\n```")
+            string = f"{traceback.format_exc()}"
+            await error_channel.send(f"```{string}```")
     
     @app_commands.command(name="top", description="Shows the top 10 users")
     async def top(self, interaction: discord.Interaction, hidden: bool=None):
@@ -167,9 +166,10 @@ class levels(commands.Cog):
             else:
                 embed.set_footer(text=f"1-{count} out of {count}")
             await interaction.response.send_message(embed=embed, ephemeral=hidden)
-        except Exception as e:
+        except:
             error_channel = self.bot.get_channel(config.error_channel)
-            await error_channel.send(f"```Error in `/top`\n{e}\n```")
+            string = f"{traceback.format_exc()}"
+            await error_channel.send(f"```{string}```")
 
 
     @app_commands.command(name="add-xp", description="Adds xp to a user")
@@ -200,9 +200,10 @@ class levels(commands.Cog):
                     db.commit()
                     embed = discord.Embed(title="Added XP", description=f"Added {xp} xp to {user.mention}. New level: {level}", color=0x00ff00)
                     await interaction.response.send_message(embed=embed)
-        except Exception as e:
+        except:
             error_channel = self.bot.get_channel(config.error_channel)
-            await error_channel.send(f"```Error in `/add-xp`\n{e}\n```")
+            string = f"{traceback.format_exc()}"
+            await error_channel.send(f"```{string}```")
     
     @app_commands.command(name="remove-xp", description="Removes xp from a user")
     @app_commands.checks.has_any_role(config.administrators, config.true_admin, config.transparent_admin)
@@ -230,9 +231,10 @@ class levels(commands.Cog):
                 db.commit()
                 embed = discord.Embed(title="Removed XP", description=f"Removed {xp} xp from {user.mention}. Also new level: `{level}`", color=0x00ff00)
                 await interaction.response.send_message(embed=embed)
-        except Exception as e:
+        except:
             error_channel = self.bot.get_channel(config.error_channel)
-            await error_channel.send(f"```Error in `/remove-xp`\n{e}\n```")
+            string = f"{traceback.format_exc()}"
+            await error_channel.send(f"```{string}```")
 
     @app_commands.command(name="set-xp", description="Sets a user's xp")
     @app_commands.checks.has_any_role(config.administrators, config.true_admin, config.transparent_admin)
@@ -259,9 +261,10 @@ class levels(commands.Cog):
                 db.commit()
                 embed = discord.Embed(title="Set XP", description=f"Set {user.mention}'s XP to `{xp}`", color=0x00ff00)
                 await interaction.response.send_message(embed=embed)
-        except Exception as e:
+        except:
             error_channel = self.bot.get_channel(config.error_channel)
-            await error_channel.send(f"```Error in `/set-xp`\n{e}\n```")
+            string = f"{traceback.format_exc()}"
+            await error_channel.send(f"```{string}```")
     
     
     @app_commands.command(name="reset-levels", description="Resets all levels")
@@ -269,9 +272,10 @@ class levels(commands.Cog):
     async def reset_levels(self, interaction: discord.Interaction):
         try:
             await interaction.response.send_message("Are you sure you would like to reset all of the levels in the server? This action is irreversible.", view=Confirm(), ephemeral=True)
-        except Exception as e:
+        except:
             error_channel = self.bot.get_channel(config.error_channel)
-            await error_channel.send(f"```Error in `/reset-levels`\n{e}\n```")
+            string = f"{traceback.format_exc()}"
+            await error_channel.send(f"```{string}```")
     
     @app_commands.command(name="reset-member", description="Resets a member's level")
     @app_commands.checks.has_any_role(config.administrators, config.true_admin, config.transparent_admin)
@@ -280,9 +284,10 @@ class levels(commands.Cog):
             cursor.execute(f"DELETE FROM levels WHERE user_id = {user.id}")
             db.commit()
             await interaction.response.send_message(f"Reset {user.mention}'s level.", ephemeral=True)
-        except Exception as e:
+        except:
             error_channel = self.bot.get_channel(config.error_channel)
-            await error_channel.send(f"```Error in `/reset-member`\n{e}\n```")
+            string = f"{traceback.format_exc()}"
+            await error_channel.send(f"```{string}```")
     
     @app_commands.command(name="list-levels", description="List all the levels")
     @app_commands.checks.has_any_role(config.administrators, config.true_admin, config.transparent_admin)
@@ -294,9 +299,10 @@ class levels(commands.Cog):
                 level += f"Level {i+1}: XP: {limit[i]:,}\n"
             embed.description += level
             await interaction.response.send_message(embed=embed, ephemeral=True)
-        except Exception as e:
+        except:
             error_channel = self.bot.get_channel(config.error_channel)
-            await error_channel.send(f"```Error in `/list-levels`\n{e}\n```")
+            string = f"{traceback.format_exc()}"
+            await error_channel.send(f"```{string}```")
 
 
 async def setup(bot):

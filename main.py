@@ -4,6 +4,7 @@ import os
 import config
 from dotenv import load_dotenv
 import asyncio
+import traceback
 load_dotenv()
 
 import mysql.connector
@@ -70,10 +71,10 @@ async def level(interaction: discord.Interaction, user: discord.User):
             embed.set_author(name=user, icon_url=user.display_avatar)
             await interaction.response.send_message(embed=embed)
         return
-    except Exception as e:
-        error_channel = bot.get_channel(config.error_channel)
-        await error_channel.send(f"```Error in `level context menu`\n{e}\n```")
-
+    except:
+        error_channel = self.bot.get_channel(config.error_channel)
+        string = f"{traceback.format_exc()}"
+        await error_channel.send(f"```{string}```")
 @bot.tree.context_menu(name="Level Leaderboard", guilds=[discord.Object(id=config.server_id)])
 async def level_leaderboard(interaction: discord.Interaction, user: discord.User):
     try:
@@ -98,9 +99,10 @@ async def level_leaderboard(interaction: discord.Interaction, user: discord.User
         else:
             embed.set_footer(text=f"1-{count} out of {count}")
         await interaction.response.send_message(embed=embed)
-    except Exception as e:
-        error_channel = bot.get_channel(config.error_channel)
-        await error_channel.send(f"```Error in `level_leaderboard context menu`\n{e}\n```")
+    except:
+        error_channel = self.bot.get_channel(config.error_channel)
+        string = f"{traceback.format_exc()}"
+        await error_channel.send(f"```{string}```")
 
 
 @bot.tree.context_menu(name="Reset Level", guilds=[discord.Object(id=config.server_id)])
@@ -132,10 +134,10 @@ async def reset_level(interaction: discord.Interaction, user: discord.User):
             db.commit()
             embed = discord.Embed(title="Reset Level", description=f"Reset {user.mention}'s level.", color=0x00ff00)
             await interaction.followup.send(embed=embed)
-    except Exception as e:
-        error_channel = bot.get_channel(config.error_channel)
-        await error_channel.send(f"```Error in reset level context menu\n{e}\n```")
-
+    except:
+        error_channel = self.bot.get_channel(config.error_channel)
+        string = f"{traceback.format_exc()}"
+        await error_channel.send(f"```{string}```")
 
 """
 def create_warnings_table():

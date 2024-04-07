@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 import mysql.connector
 import os
 import json
+import traceback
 load_dotenv()
 
 db = mysql.connector.connect(
@@ -42,9 +43,10 @@ class AppealModal(discord.ui.Modal, title="Appeal a punishment"):
             g.close()
             return await interaction.response.send_message(f"Your appeal has been submitted.\n\nYou will be contacted by me <@279409843964608514> about the result of your information. If needed our staff will contact you if we need more information.", ephemeral=True)
 
-        except Exception as e:
-            error_channel = interaction.client.get_channel(config.error_channel)
-            await error_channel.send(f"```Error in appeal modal\n{e}\n```")
+        except:
+            error_channel = self.bot.get_channel(config.error_channel)
+            string = f"{traceback.format_exc()}"
+            await error_channel.send(f"```{string}```")
             await interaction.response.send_message("An error occured while submitting your appeal. Bot Devs have been alerted.", ephemeral=True)
 
 class appeals(commands.Cog):

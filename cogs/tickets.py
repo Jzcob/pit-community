@@ -1,10 +1,9 @@
 import discord
 from discord import app_commands, TextStyle, utils
 from discord.ext import commands
-import os
 import config
 from dotenv import load_dotenv
-import datetime
+import traceback
 load_dotenv()
 
 
@@ -35,9 +34,10 @@ class TicketsModal(discord.ui.Modal, title="Ticket - Pit Community"):
                 await ticketLog.send(f"Ticket created by {discord_user.mention} in {ticketChannel.mention}")
             except Exception as e:
                 print(e)
-        except Exception as e:
+        except:
             error_channel = self.bot.get_channel(config.error_channel)
-            await error_channel.send(f"<@920797181034778655> Error with Ticket Modal!\n ```{e}```")
+            string = f"{traceback.format_exc()}"
+            await error_channel.send(f"```{string}```")
             await interaction.response.send_message(content="There was an error submitting your ticket. I have alerted the Developers!", ephemeral=True)
 
 

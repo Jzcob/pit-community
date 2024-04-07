@@ -1,9 +1,9 @@
 import discord
 from discord.ext import commands
-from discord import app_commands, TextStyle
+from discord import app_commands
 import os
 import config
-import json
+import traceback
 import requests
 import mysql.connector
 from datetime import datetime, timedelta
@@ -138,7 +138,6 @@ class verify(commands.Cog):
                         pass
                     if achievement_points >= 5000:
                         await interaction.user.add_roles(achievement_hunter)
-                    
                     try:
                         network_exp = response.json()['player']['networkExp']
                     except:
@@ -166,9 +165,10 @@ class verify(commands.Cog):
                     await msg.edit(content=f"You have been verified as ``{displayname}!")
             else:
                 await msg.edit(content="You are already verified!")
-        except Exception as e:
+        except:
             error_channel = self.bot.get_channel(config.error_channel)
-            await error_channel.send(f"```Error in `/verify`\n{e}\n```")
+            string = f"{traceback.format_exc()}"
+            await error_channel.send(f"```{string}```")
 
 async def setup(bot):
     await bot.add_cog(verify(bot), guilds=[discord.Object(id=config.server_id)])
