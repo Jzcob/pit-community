@@ -2,12 +2,8 @@ import discord
 from discord.ext import commands
 import requests
 from discord import app_commands
-import json
-import asyncio
 import datetime
-import time
 import os
-import random
 import math
 from dotenv import load_dotenv
 load_dotenv()
