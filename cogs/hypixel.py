@@ -7,6 +7,7 @@ import os
 import math
 import traceback
 from dotenv import load_dotenv
+import config
 load_dotenv()
 
 class Hypixel(commands.Cog):
