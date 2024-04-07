@@ -9,7 +9,7 @@ import requests
 import traceback
 load_dotenv()
 
-api_key = os.getenv("dev_key")
+api_key = os.getenv("api_key")
 
 db = mysql.connector.connect(
     host=os.getenv("punishments_host"),

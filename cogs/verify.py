@@ -34,9 +34,10 @@ class verify(commands.Cog):
             msg = await interaction.original_response()
             today = datetime.now()
             timestamp = today.timestamp()
-            hypixelUUID = requests.get(f"https://api.hypixel.net/player?key={os.getenv('api_key')}&name={ign}")
-            response = requests.get(hypixelUUID)
-            uuid = response.json()['id']
+            url = f"https://api.hypixel.net/player?key={os.getenv('api_key')}&name={ign}"
+            dataGet = requests.get(url)
+            data = dataGet.json()
+            uuid = data['player']['uuid']
             cursor.execute(f"SELECT * FROM verified WHERE user_id = {interaction.user.id}")
             result = cursor.fetchone()
             unranked = discord.utils.get(interaction.guild.roles, id=config.unranked)

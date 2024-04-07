@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 import config
 load_dotenv()
 
-class Hypixel(commands.Cog):
+class hypixel(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
     
@@ -24,9 +24,10 @@ class Hypixel(commands.Cog):
             await interaction.response.defer()
             msg = await interaction.original_response()
 
-            hypixelUUID = requests.get(f"https://api.hypixel.net/player?key={os.getenv('api_key')}&name={ign}")
-            data = requests.json(hypixelUUID)
-            uuid = data['id']
+            url = f"https://api.hypixel.net/player?key={os.getenv('api_key')}&name={ign}"
+            dataGet = requests.get(url)
+            data = dataGet.json()
+            uuid = data['player']['uuid']
             hypixel = requests.get(f"https://api.hypixel.net/player?key={os.getenv('api_key')}&uuid={uuid}")
             data = requests.json(hypixel)
             if data['player'] == None:
@@ -68,6 +69,6 @@ class Hypixel(commands.Cog):
 
 
 async def setup(bot):
-    await bot.add_cog(Hypixel(bot), guilds=[discord.Object(id=882708221697863434)])
+    await bot.add_cog(hypixel(bot), guilds=[discord.Object(id=config.server_id)])
         
     
