@@ -68,10 +68,13 @@ class tickets(commands.Cog):
                 await interaction.response.send_message("Closing the ticket", ephemeral=True)
                 try:
                     messages = interaction.channel.history(limit=None)
-                    transcript = ""
-                    async for message in messages[-1]:
+                    transcriptList = []
+                    async for message in messages:
                         timestamp = message.created_at.strftime("%m/%d/%Y @ %H:%M:%S")
-                        transcript += f"{message.author.name} ({timestamp}): {message.content}\n\n"
+                        transcriptList.append(f"{message.author.name} ({timestamp}): {message.content}\n\n")
+                    transcript = ""
+                    for trans in transcriptList[-1]:
+                        transcript += trans
                     with open("transcript.txt", "w", encoding="utf-8") as file:
                         file.write(transcript)
                 except Exception as e:
