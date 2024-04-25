@@ -158,44 +158,10 @@ class general(commands.Cog):
 
     @app_commands.command(name="motm", description="Set the member of the month.")
     @app_commands.checks.has_any_role(config.administrators, config.transparent_admin, config.true_admin)
-    @app_commands.describe(announce="Should the bot announce the member of the month?")
-    @app_commands.choices(announce=[
-        app_commands.Choice(name="Yes", value="yes"),
-        app_commands.Choice(name="No", value="no")
-    ])
-    @app_commands.describe(dm="Should the bot dm the member of the month?")
-    @app_commands.choices(dm=[
-        app_commands.Choice(name="Yes", value="yes"),
-        app_commands.Choice(name="No", value="no")
-    ])
-    @app_commands.describe(month="The month to set the member of the month for.")
-    @app_commands.choices(month=[
-        app_commands.Choice(name="January", value="january"),
-        app_commands.Choice(name="February", value="february"),
-        app_commands.Choice(name="March", value="march"),
-        app_commands.Choice(name="April", value="april"),
-        app_commands.Choice(name="May", value="may"),
-        app_commands.Choice(name="June", value="june"),
-        app_commands.Choice(name="July", value="july"),
-        app_commands.Choice(name="August", value="august"),
-        app_commands.Choice(name="September", value="september"),
-        app_commands.Choice(name="October", value="october"),
-        app_commands.Choice(name="November", value="november"),
-        app_commands.Choice(name="December", value="december")
-    ])
-    async def motm(self, interaction: discord.Interaction, newuser: discord.User, olduser: discord.User, month: discord.app_commands.Choice[str], announce: discord.app_commands.Choice[str], dm: discord.app_commands.Choice[str]):
+    async def motm(self, interaction: discord.Interaction, newuser: discord.User, olduser: discord.User):
         role = interaction.guild.get_role(config.motm)
-        announcement = interaction.guild.get_channel(config.announcements)
         await newuser.add_roles(role)
         await olduser.remove_roles(role)
-        if announce.value == "yes":
-            await interaction.channel.send(f"{newuser.mention} is the new member of the month!")
-        if dm.value == "yes":
-            try:
-                await newuser.send(f"You are the new member of the month!")
-            except Exception as e:
-                print("Could not dm user.")
-
         return await interaction.response.send_message(f"Set {newuser.mention} as the member of the month.", ephemeral=True)
 
 
