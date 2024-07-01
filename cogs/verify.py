@@ -11,13 +11,6 @@ from dotenv import load_dotenv
 load_dotenv()
 api_key = os.getenv("api_key")
 
-db = mysql.connector.connect(
-    host=os.getenv("punishments_host"),
-    user=os.getenv("punishments_user"),
-    password=os.getenv("punishments_password"),
-    database=os.getenv("punishments_database")
-)
-cursor = db.cursor()
 
 class verify(commands.Cog):
     def __init__(self, bot):
@@ -29,6 +22,13 @@ class verify(commands.Cog):
     
     @app_commands.command(name="verify", description="Verify your minecraft account with the bot.")
     async def verify(self, interaction: discord.Interaction, ign: str):
+        db = mysql.connector.connect(
+            host=os.getenv("punishments_host"),
+            user=os.getenv("punishments_user"),
+            password=os.getenv("punishments_password"),
+            database=os.getenv("punishments_database")
+        )
+        cursor = db.cursor()
         try:
             await interaction.response.defer()
             msg = await interaction.original_response()
@@ -170,6 +170,7 @@ class verify(commands.Cog):
             error_channel = self.bot.get_channel(config.error_channel)
             string = f"{traceback.format_exc()}"
             await error_channel.send(f"```{string}```")
+        db.close()
 
 async def setup(bot):
     await bot.add_cog(verify(bot), guilds=[discord.Object(id=config.server_id)])

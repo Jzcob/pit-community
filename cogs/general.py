@@ -11,13 +11,7 @@ load_dotenv()
 
 api_key = os.getenv("api_key")
 
-db = mysql.connector.connect(
-    host=os.getenv("punishments_host"),
-    user=os.getenv("punishments_user"),
-    password=os.getenv("punishments_password"),
-    database=os.getenv("punishments_database")
-)
-cursor = db.cursor()
+
 
 class general(commands.Cog):
     def __init__(self, bot):
@@ -124,6 +118,13 @@ class general(commands.Cog):
     @app_commands.command(name="who-is", description="Get users in-game name.")
     @app_commands.checks.has_any_role(config.moderator, config.administrators, config.transparent_admin, config.true_admin)
     async def whoIs(self, interaction: discord.Interaction, user: discord.User):
+        db = mysql.connector.connect(
+            host=os.getenv("punishments_host"),
+            user=os.getenv("punishments_user"),
+            password=os.getenv("punishments_password"),
+            database=os.getenv("punishments_database")
+        )
+        cursor = db.cursor()
         try:
             cursor.execute(f"SELECT * FROM verified WHERE user_id = {user.id}")
             result = cursor.fetchone()
@@ -143,6 +144,7 @@ class general(commands.Cog):
             error_channel = self.bot.get_channel(config.error_channel)
             string = f"{traceback.format_exc()}"
             await error_channel.send(f"```{string}```")
+        db.close()
     
     @app_commands.command(name="add-reaction", description="Add a reaction to a message.")
     @app_commands.checks.has_any_role(config.moderator, config.administrators, config.transparent_admin, config.true_admin)

@@ -8,13 +8,6 @@ import traceback
 load_dotenv()
 
 import mysql.connector
-db = mysql.connector.connect(
-    host=os.getenv("punishments_host"),
-    user=os.getenv("punishments_user"),
-    password=os.getenv("punishments_password"),
-    database=os.getenv("punishments_database")
-)
-cursor = db.cursor()
 
 
 intents = discord.Intents.all()
@@ -58,6 +51,13 @@ async def syncserver(ctx) -> None:
 
 @bot.tree.context_menu(name="Level", guilds=[discord.Object(id=config.server_id)])
 async def level(interaction: discord.Interaction, user: discord.User):
+    db = mysql.connector.connect(
+        host=os.getenv("punishments_host"),
+        user=os.getenv("punishments_user"),
+        password=os.getenv("punishments_password"),
+        database=os.getenv("punishments_database")
+    )
+    cursor = db.cursor()
     try:
         cursor.execute(f"SELECT * FROM levels WHERE user_id = {user.id}")
         result = cursor.fetchone()
@@ -72,11 +72,20 @@ async def level(interaction: discord.Interaction, user: discord.User):
             await interaction.response.send_message(embed=embed)
         return
     except:
-        error_channel = self.bot.get_channel(config.error_channel)
+        error_channel = bot.get_channel(config.error_channel)
         string = f"{traceback.format_exc()}"
         await error_channel.send(f"```{string}```")
+    db.close()
+
 @bot.tree.context_menu(name="Level Leaderboard", guilds=[discord.Object(id=config.server_id)])
 async def level_leaderboard(interaction: discord.Interaction, user: discord.User):
+    db = mysql.connector.connect(
+        host=os.getenv("punishments_host"),
+        user=os.getenv("punishments_user"),
+        password=os.getenv("punishments_password"),
+        database=os.getenv("punishments_database")
+    )
+    cursor = db.cursor()
     try:
         cursor.execute(f"SELECT COUNT(*) FROM levels")
         count = cursor.fetchone()[0]
@@ -100,13 +109,21 @@ async def level_leaderboard(interaction: discord.Interaction, user: discord.User
             embed.set_footer(text=f"1-{count} out of {count}")
         await interaction.response.send_message(embed=embed)
     except:
-        error_channel = self.bot.get_channel(config.error_channel)
+        error_channel = bot.get_channel(config.error_channel)
         string = f"{traceback.format_exc()}"
         await error_channel.send(f"```{string}```")
+    db.close()
 
 
 @bot.tree.context_menu(name="Reset Level", guilds=[discord.Object(id=config.server_id)])
 async def reset_level(interaction: discord.Interaction, user: discord.User):
+    db = mysql.connector.connect(
+        host=os.getenv("punishments_host"),
+        user=os.getenv("punishments_user"),
+        password=os.getenv("punishments_password"),
+        database=os.getenv("punishments_database")
+    )
+    cursor = db.cursor()
     try:
         def check(m):
             return m.author.id == interaction.user.id and m.channel.id == interaction.channel.id and m.content.lower() == "yes"
@@ -135,9 +152,10 @@ async def reset_level(interaction: discord.Interaction, user: discord.User):
             embed = discord.Embed(title="Reset Level", description=f"Reset {user.mention}'s level.", color=0x00ff00)
             await interaction.followup.send(embed=embed)
     except:
-        error_channel = self.bot.get_channel(config.error_channel)
+        error_channel = bot.get_channel(config.error_channel)
         string = f"{traceback.format_exc()}"
         await error_channel.send(f"```{string}```")
+    db.close()
 
 """
 def create_warnings_table():

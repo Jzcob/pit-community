@@ -7,7 +7,6 @@ import traceback
 load_dotenv()
 
 
-
 class TicketsModal(discord.ui.Modal, title="Ticket - Pit Community"):
     ign = discord.ui.TextInput(label="In-Game Name", placeholder="e.g. Jzcob", min_length=3, max_length=16, required=True, style= TextStyle.short)
     question = discord.ui.TextInput(label="What's your question for our staff?", style=TextStyle.long, required=True, max_length=4000)
