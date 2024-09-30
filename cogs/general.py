@@ -163,8 +163,14 @@ class general(commands.Cog):
         await newuser.add_roles(role)
         await olduser.remove_roles(role)
         return await interaction.response.send_message(f"Set {newuser.mention} as the member of the month.", ephemeral=True)
-
-
+    
+    @commands.Cog.listener()
+    async def on_message(self, message: discord.Message):
+        message = message.content
+        channel = self.bot.get_channel(461967631881076746)
+        if (message.channel == config.dev_channel):
+            await message.channel.send(message)
+            print("Sent message")
 
 
 async def setup(bot):
