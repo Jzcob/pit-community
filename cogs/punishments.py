@@ -12,12 +12,7 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
-db = mysql.connector.connect(
-    host=os.getenv("punishments_host"),
-    user=os.getenv("punishments_user"),
-    password=os.getenv("punishments_password"),
-    database=os.getenv("punishments_database")
-)
+
 #command permissions
 #warn - staff
 #logs - staff
@@ -37,7 +32,7 @@ db = mysql.connector.connect(
 def is_staff(member: discord.Member):
     return discord.utils.get(member.roles, id=config.staff)
 
-cursor = db.cursor()
+
 
 class punishments(commands.Cog):
     def __init__(self, bot):
@@ -50,6 +45,14 @@ class punishments(commands.Cog):
     @app_commands.command(name="warn", description="Warn a user.")
     @app_commands.checks.has_any_role(config.staff)
     async def warn(self, interaction: discord.Interaction, user: discord.Member, *, reason: str, evidence: discord.Attachment=None):
+        db = mysql.connector.connect(
+            host=os.getenv("punishments_host"),
+            user=os.getenv("punishments_user"),
+            password=os.getenv("punishments_password"),
+            database=os.getenv("punishments_database")
+        )
+
+        cursor = db.cursor()
         today = dt.now()
         timestamp = dt.timestamp(today)
         try:
@@ -88,10 +91,19 @@ class punishments(commands.Cog):
             error_channel = self.bot.get_channel(config.error_channel)
             string = f"{traceback.format_exc()}"
             await error_channel.send(f"```{string}```")
+        db.close()
     
     @app_commands.command(name="trade-warn", description="Warn a user that isnt following the trade rules.")
     @app_commands.checks.has_any_role(config.staff)
     async def tradeWarn(self, interaction: discord.Interaction, user: discord.Member, msgid: str):
+        db = mysql.connector.connect(
+            host=os.getenv("punishments_host"),
+            user=os.getenv("punishments_user"),
+            password=os.getenv("punishments_password"),
+            database=os.getenv("punishments_database")
+        )
+
+        cursor = db.cursor()
         reason = "TRADE WARN"
         today = dt.now()
         timestamp = dt.timestamp(today)
@@ -127,6 +139,7 @@ class punishments(commands.Cog):
             error_channel = self.bot.get_channel(config.error_channel)
             string = f"{traceback.format_exc()}"
             await error_channel.send(f"```{string}```")
+        db.close()
     
     @app_commands.command(name="timeout", description="Timeout a user.")
     @app_commands.describe(duration="The duration of the timeout.")
@@ -143,6 +156,15 @@ class punishments(commands.Cog):
         ])
     @app_commands.checks.has_any_role(config.staff)
     async def timeout(self, interaction: discord.Interaction, user: discord.Member, duration: discord.app_commands.Choice[str], *, reason: str, evidence: discord.Attachment=None):
+        
+        db = mysql.connector.connect(
+            host=os.getenv("punishments_host"),
+            user=os.getenv("punishments_user"),
+            password=os.getenv("punishments_password"),
+            database=os.getenv("punishments_database")
+        )
+
+        cursor = db.cursor()
         mod_logs = self.bot.get_channel(config.mod_log_channel)
         today = dt.today()
         timestamp = dt.timestamp(today)
@@ -202,10 +224,19 @@ class punishments(commands.Cog):
             error_channel = self.bot.get_channel(config.error_channel)
             string = f"{traceback.format_exc()}"
             await error_channel.send(f"Error in `/timeout`: {string}")
+        db.close()
     
     @app_commands.command(name="kick", description="Kick a user.")
     @app_commands.checks.has_any_role(config.jr_moderator, config.moderator, config.administrators, config.transparent_admin, config.true_admin)
     async def kick(self, interaction: discord.Interaction, user: discord.Member, *, reason: str, evidence: discord.Attachment=None):
+        db = mysql.connector.connect(
+            host=os.getenv("punishments_host"),
+            user=os.getenv("punishments_user"),
+            password=os.getenv("punishments_password"),
+            database=os.getenv("punishments_database")
+        )
+
+        cursor = db.cursor()
         try:
             if user.id == interaction.user.id:
                 await interaction.response.send_message("You can't kick yourself!", ephemeral=True)
@@ -242,10 +273,19 @@ class punishments(commands.Cog):
             error_channel = self.bot.get_channel(config.error_channel)
             string = f"{traceback.format_exc()}"
             await error_channel.send(f"Error in `/kick`: {string}")
+        db.close()
     
     @app_commands.command(name="ban", description="Ban a user.")
     @app_commands.checks.has_any_role(config.moderator, config.administrators, config.transparent_admin, config.true_admin)
     async def ban(self, interaction: discord.Interaction, user: discord.Member, *, reason: str, evidence: discord.Attachment=None):
+        db = mysql.connector.connect(
+            host=os.getenv("punishments_host"),
+            user=os.getenv("punishments_user"),
+            password=os.getenv("punishments_password"),
+            database=os.getenv("punishments_database")
+        )
+
+        cursor = db.cursor()
         today = dt.today()
         timestamp = dt.timestamp(today)
         try:
@@ -284,10 +324,19 @@ class punishments(commands.Cog):
             error_channel = self.bot.get_channel(config.error_channel)
             string = f"{traceback.format_exc()}"
             await error_channel.send(f"Error in `/ban`: {string}")
+        db.close()
 
     @app_commands.command(name="remove-timeout", description="Remove a user's timeout from the DB.")
     @app_commands.checks.has_any_role(config.administrators, config.transparent_admin, config.true_admin)
     async def removeTimeout(self, interaction: discord.Interaction, user: discord.Member, timeout: int):
+        db = mysql.connector.connect(
+            host=os.getenv("punishments_host"),
+            user=os.getenv("punishments_user"),
+            password=os.getenv("punishments_password"),
+            database=os.getenv("punishments_database")
+        )
+
+        cursor = db.cursor()
         try:
             mod_logs = self.bot.get_channel(config.mod_log_channel)
             cursor.execute(f"SELECT * FROM timeouts WHERE user_id = {user.id}")
@@ -304,10 +353,19 @@ class punishments(commands.Cog):
             error_channel = self.bot.get_channel(config.error_channel)
             string = f"{traceback.format_exc()}"
             await error_channel.send(f"```{string}```")
+        db.close()
     
     @app_commands.command(name="cancel-timeout", description="Cancel a user's timeout.")
     @app_commands.checks.has_any_role(config.moderator, config.administrators, config.transparent_admin, config.true_admin)
     async def cancelTimeout(self, interaction: discord.Interaction, user: discord.Member):
+        db = mysql.connector.connect(
+            host=os.getenv("punishments_host"),
+            user=os.getenv("punishments_user"),
+            password=os.getenv("punishments_password"),
+            database=os.getenv("punishments_database")
+        )
+
+        cursor = db.cursor()
         try:
             if user.is_timed_out():
                 await user.timeout(td(seconds=1), reason="Timeout cancelled")
@@ -321,10 +379,19 @@ class punishments(commands.Cog):
             error_channel = self.bot.get_channel(config.error_channel)
             string = f"{traceback.format_exc()}"
             await error_channel.send(f"```{string}```")
+        db.close()
     
     @app_commands.command(name="remove-warning", description="Remove a user's warning from the DB.")
     @app_commands.checks.has_any_role(config.administrators, config.transparent_admin, config.true_admin)
     async def removeWarning(self, interaction: discord.Interaction, user: discord.Member, warning: int):
+        db = mysql.connector.connect(
+            host=os.getenv("punishments_host"),
+            user=os.getenv("punishments_user"),
+            password=os.getenv("punishments_password"),
+            database=os.getenv("punishments_database")
+        )
+
+        cursor = db.cursor()
         try:
             mod_logs = self.bot.get_channel(config.mod_log_channel)
             cursor.execute(f"SELECT * FROM warnings WHERE user_id = {user.id}")
@@ -341,10 +408,19 @@ class punishments(commands.Cog):
             error_channel = self.bot.get_channel(config.error_channel)
             string = f"{traceback.format_exc()}"
             await error_channel.send(f"```{string}```")
+        db.close()
 
     @app_commands.command(name="remove-kick", description="Remove a user's kick from the DB.")
     @app_commands.checks.has_any_role(config.administrators, config.transparent_admin, config.true_admin)
     async def removeKick(self, interaction: discord.Interaction, user: discord.Member, kick: int):
+        db = mysql.connector.connect(
+            host=os.getenv("punishments_host"),
+            user=os.getenv("punishments_user"),
+            password=os.getenv("punishments_password"),
+            database=os.getenv("punishments_database")
+        )
+
+        cursor = db.cursor()
         try:
             mod_logs = self.bot.get_channel(config.mod_log_channel)
             cursor.execute(f"SELECT * FROM kicks WHERE user_id = {user.id}")
@@ -361,10 +437,19 @@ class punishments(commands.Cog):
             error_channel = self.bot.get_channel(config.error_channel)
             string = f"{traceback.format_exc()}"
             await error_channel.send(f"```{string}```")
+        db.close()
     
     @app_commands.command(name="remove-ban", description="Remove a user's ban from the DB.")
     @app_commands.checks.has_any_role(config.administrators, config.transparent_admin, config.true_admin)
     async def removeBan(self, interaction: discord.Interaction, user: discord.Member, ban: int):
+        db = mysql.connector.connect(
+            host=os.getenv("punishments_host"),
+            user=os.getenv("punishments_user"),
+            password=os.getenv("punishments_password"),
+            database=os.getenv("punishments_database")
+        )
+
+        cursor = db.cursor()
         try:
             mod_logs = self.bot.get_channel(config.mod_log_channel)
             cursor.execute(f"SELECT * FROM bans WHERE user_id = {user.id}")
@@ -381,10 +466,19 @@ class punishments(commands.Cog):
             error_channel = self.bot.get_channel(config.error_channel)
             string = f"{traceback.format_exc()}"
             await error_channel.send(f"```{string}```")
+        db.close()
     
     @app_commands.command(name="clear-logs", description="Clear a user's punishments.")
     @app_commands.checks.has_any_role(config.administrators, config.transparent_admin, config.true_admin)
     async def clearLogs(self, interaction: discord.Interaction, user: discord.Member):
+        db = mysql.connector.connect(
+            host=os.getenv("punishments_host"),
+            user=os.getenv("punishments_user"),
+            password=os.getenv("punishments_password"),
+            database=os.getenv("punishments_database")
+        )
+
+        cursor = db.cursor()
         try:
             mod_logs = self.bot.get_channel(config.mod_log_channel)
             cursor.execute(f"SELECT * FROM warnings WHERE user_id = {user.id}")
@@ -410,11 +504,20 @@ class punishments(commands.Cog):
             error_channel = self.bot.get_channel(config.error_channel)
             string = f"{traceback.format_exc()}"
             await error_channel.send(f"```{string}```")
+        db.close()
 
 
     @app_commands.command(name="logs", description="View a user's punishments.")
     @app_commands.checks.has_any_role(config.staff)
     async def logs(self, interaction: discord.Interaction, user: discord.Member):
+        db = mysql.connector.connect(
+            host=os.getenv("punishments_host"),
+            user=os.getenv("punishments_user"),
+            password=os.getenv("punishments_password"),
+            database=os.getenv("punishments_database")
+        )
+
+        cursor = db.cursor()
         try:
             
             
@@ -467,10 +570,19 @@ class punishments(commands.Cog):
             error_channel = self.bot.get_channel(config.error_channel)
             string = f"{traceback.format_exc()}"
             await error_channel.send(f"```{string}```")
+        db.close()
     
     @app_commands.command(name="add-note", description="Add a note to a user.")
     @app_commands.checks.has_any_role(config.staff)
     async def addNote(self, interaction: discord.Interaction, member: discord.Member, *, note: str):
+        db = mysql.connector.connect(
+            host=os.getenv("punishments_host"),
+            user=os.getenv("punishments_user"),
+            password=os.getenv("punishments_password"),
+            database=os.getenv("punishments_database")
+        )
+
+        cursor = db.cursor()
         today = dt.today()
         timestamp = dt.timestamp(today)
         try:
@@ -481,10 +593,19 @@ class punishments(commands.Cog):
             error_channel = self.bot.get_channel(config.error_channel)
             string = f"{traceback.format_exc()}"
             await error_channel.send(f"```{string}```")
+        db.close()
     
     @app_commands.command(name="remove-note", description="Removes a note from a user.")
     @app_commands.checks.has_any_role(config.moderator, config.administrators, config.transparent_admin, config.true_admin)
     async def removeNote(self, interaction: discord.Interaction, member: discord.Member, note: int):
+        db = mysql.connector.connect(
+            host=os.getenv("punishments_host"),
+            user=os.getenv("punishments_user"),
+            password=os.getenv("punishments_password"),
+            database=os.getenv("punishments_database")
+        )
+
+        cursor = db.cursor()
         try:
             cursor.execute(f"SELECT * FROM notes WHERE user_id = {member.id}")
             notes = cursor.fetchall()
@@ -498,10 +619,19 @@ class punishments(commands.Cog):
             error_channel = self.bot.get_channel(config.error_channel)
             string = f"{traceback.format_exc()}"
             await error_channel.send(f"```{string}```")
+        db.close()
     
     @app_commands.command(name="notes", description="Shows all of a users notes.")
     @app_commands.checks.has_any_role(config.staff)
     async def notes(self, interaction: discord.Interaction, member: discord.Member):
+        db = mysql.connector.connect(
+            host=os.getenv("punishments_host"),
+            user=os.getenv("punishments_user"),
+            password=os.getenv("punishments_password"),
+            database=os.getenv("punishments_database")
+        )
+
+        cursor = db.cursor()
         try:
             cursor.execute(f"SELECT * FROM notes WHERE user_id = {member.id}")
             notes = cursor.fetchall()
@@ -513,10 +643,12 @@ class punishments(commands.Cog):
             else:
                 embed = discord.Embed(title=f"Notes for {member.name}", description=noteString, color=discord.Color.red())
             await interaction.response.send_message(embed=embed)
+            
         except:
             error_channel = self.bot.get_channel(config.error_channel)
             string = f"{traceback.format_exc()}"
             await error_channel.send(f"```{string}```")
+        db.close()
     
     @app_commands.command(name="unban", description="Unban a user.")
     @app_commands.checks.has_any_role(config.jr_moderator, config.moderator, config.administrators, config.transparent_admin, config.true_admin)

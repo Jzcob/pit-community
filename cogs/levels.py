@@ -13,13 +13,6 @@ import traceback
 import time
 load_dotenv()
 
-db = mysql.connector.connect(
-    host=os.getenv("punishments_host"),
-    user=os.getenv("punishments_user"),
-    password=os.getenv("punishments_password"),
-    database=os.getenv("punishments_database")
-)
-cursor = db.cursor()
 
 playing = discord.Activity(type=discord.ActivityType.playing, name="The Pit")
 
@@ -34,12 +27,20 @@ class Confirm(discord.ui.View):
     
     @discord.ui.button(label= "Confirm", style= discord.ButtonStyle.red, custom_id= 'confirmmm')
     async def confirm_button2(self, interaction: discord.Interaction, button):
+        db = mysql.connector.connect(
+            host=os.getenv("punishments_host"),
+            user=os.getenv("punishments_user"),
+            password=os.getenv("punishments_password"),
+            database=os.getenv("punishments_database")
+        )
+        cursor = db.cursor()
         try:
             cursor.execute(f"DELETE FROM levels")
             db.commit()
             await interaction.response.send_message("Levels reset.")
         except Exception as e:
             print(e)
+        db.close()
 
 
 class levels(commands.Cog):
@@ -55,6 +56,13 @@ class levels(commands.Cog):
     
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
+        db = mysql.connector.connect(
+            host=os.getenv("punishments_host"),
+            user=os.getenv("punishments_user"),
+            password=os.getenv("punishments_password"),
+            database=os.getenv("punishments_database")
+        )
+        cursor = db.cursor()
         try:
             if message.author.bot:
                 return
@@ -120,9 +128,17 @@ class levels(commands.Cog):
             error_channel = self.bot.get_channel(config.error_channel)
             string = f"{traceback.format_exc()}"
             await error_channel.send(f"```{string}```")
+        db.close()
     
     @app_commands.command(name="level", description="Shows your level")
     async def level(self, interaction: discord.Interaction, user: discord.User = None, hidden: bool=None):
+        db = mysql.connector.connect(
+            host=os.getenv("punishments_host"),
+            user=os.getenv("punishments_user"),
+            password=os.getenv("punishments_password"),
+            database=os.getenv("punishments_database")
+        )
+        cursor = db.cursor()
         try:
             if user is None:
                 user = interaction.user
@@ -140,9 +156,17 @@ class levels(commands.Cog):
             error_channel = self.bot.get_channel(config.error_channel)
             string = f"{traceback.format_exc()}"
             await error_channel.send(f"```{string}```")
+        db.close()
     
     @app_commands.command(name="top", description="Shows the top 10 users")
     async def top(self, interaction: discord.Interaction, hidden: bool=None):
+        db = mysql.connector.connect(
+            host=os.getenv("punishments_host"),
+            user=os.getenv("punishments_user"),
+            password=os.getenv("punishments_password"),
+            database=os.getenv("punishments_database")
+        )
+        cursor = db.cursor()
         try:
             user = interaction.user
             cursor.execute(f"SELECT COUNT(*) FROM levels")
@@ -170,11 +194,19 @@ class levels(commands.Cog):
             error_channel = self.bot.get_channel(config.error_channel)
             string = f"{traceback.format_exc()}"
             await error_channel.send(f"```{string}```")
+        db.close()
 
 
     @app_commands.command(name="add-xp", description="Adds xp to a user")
     @app_commands.checks.has_any_role(config.administrators, config.true_admin, config.transparent_admin)
     async def add_xp(self, interaction: discord.Interaction, user: discord.User, xp: int):
+        db = mysql.connector.connect(
+            host=os.getenv("punishments_host"),
+            user=os.getenv("punishments_user"),
+            password=os.getenv("punishments_password"),
+            database=os.getenv("punishments_database")
+        )
+        cursor = db.cursor()
         try:
             cursor.execute(f"SELECT * FROM levels WHERE user_id = {user.id}")
             result = cursor.fetchone()
@@ -204,10 +236,18 @@ class levels(commands.Cog):
             error_channel = self.bot.get_channel(config.error_channel)
             string = f"{traceback.format_exc()}"
             await error_channel.send(f"```{string}```")
+        db.close()
     
     @app_commands.command(name="remove-xp", description="Removes xp from a user")
     @app_commands.checks.has_any_role(config.administrators, config.true_admin, config.transparent_admin)
     async def remove_xp(self, interaction: discord.Interaction, user: discord.User, xp: int):
+        db = mysql.connector.connect(
+            host=os.getenv("punishments_host"),
+            user=os.getenv("punishments_user"),
+            password=os.getenv("punishments_password"),
+            database=os.getenv("punishments_database")
+        )
+        cursor = db.cursor()
         try:    
             cursor.execute(f"SELECT * FROM levels WHERE user_id = {user.id}")
             result = cursor.fetchone()
@@ -235,10 +275,18 @@ class levels(commands.Cog):
             error_channel = self.bot.get_channel(config.error_channel)
             string = f"{traceback.format_exc()}"
             await error_channel.send(f"```{string}```")
+        db.close()
 
     @app_commands.command(name="set-xp", description="Sets a user's xp")
     @app_commands.checks.has_any_role(config.administrators, config.true_admin, config.transparent_admin)
     async def set_xp(self, interaction: discord.Interaction, user: discord.User, xp: int):
+        db = mysql.connector.connect(
+            host=os.getenv("punishments_host"),
+            user=os.getenv("punishments_user"),
+            password=os.getenv("punishments_password"),
+            database=os.getenv("punishments_database")
+        )
+        cursor = db.cursor()
         try:
             cursor.execute(f"SELECT * FROM levels WHERE user_id = {user.id}")
             result = cursor.fetchone()
@@ -265,6 +313,7 @@ class levels(commands.Cog):
             error_channel = self.bot.get_channel(config.error_channel)
             string = f"{traceback.format_exc()}"
             await error_channel.send(f"```{string}```")
+        db.close()
     
     
     @app_commands.command(name="reset-levels", description="Resets all levels")
@@ -280,6 +329,13 @@ class levels(commands.Cog):
     @app_commands.command(name="reset-member", description="Resets a member's level")
     @app_commands.checks.has_any_role(config.administrators, config.true_admin, config.transparent_admin)
     async def reset_member(self, interaction: discord.Interaction, user: discord.User):
+        db = mysql.connector.connect(
+            host=os.getenv("punishments_host"),
+            user=os.getenv("punishments_user"),
+            password=os.getenv("punishments_password"),
+            database=os.getenv("punishments_database")
+        )
+        cursor = db.cursor()
         try:
             cursor.execute(f"DELETE FROM levels WHERE user_id = {user.id}")
             db.commit()
@@ -288,6 +344,7 @@ class levels(commands.Cog):
             error_channel = self.bot.get_channel(config.error_channel)
             string = f"{traceback.format_exc()}"
             await error_channel.send(f"```{string}```")
+        db.close()
     
     @app_commands.command(name="list-levels", description="List all the levels")
     @app_commands.checks.has_any_role(config.administrators, config.true_admin, config.transparent_admin)

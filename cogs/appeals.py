@@ -9,13 +9,6 @@ import json
 import traceback
 load_dotenv()
 
-db = mysql.connector.connect(
-    host=os.getenv("punishments_host"),
-    user=os.getenv("punishments_user"),
-    password=os.getenv("punishments_password"),
-    database=os.getenv("punishments_database")
-)
-cursor = db.cursor()
 appeals_channel_id = 1179230717465608263
 class AppealModal(discord.ui.Modal, title="Appeal a punishment"):
     punishmentReason = discord.ui.TextInput(label="What is your punishment reason?", placeholder="I was warned because I was spamming a lot", min_length=10, style=TextStyle.long, required=True)
@@ -66,6 +59,13 @@ class appeals(commands.Cog):
         discord.app_commands.Choice(name="Timeout", value="timeout")
     ])
     async def appeal(self, interaction: discord.Interaction, type: discord.app_commands.Choice[str]):
+        db = mysql.connector.connect(
+            host=os.getenv("punishments_host"),
+            user=os.getenv("punishments_user"),
+            password=os.getenv("punishments_password"),
+            database=os.getenv("punishments_database")
+        )
+        cursor = db.cursor()
         try:
             try:
                 cursor.execute(f"SELECT * FROM warnings WHERE user_id = {interaction.user.id}")
@@ -116,8 +116,7 @@ class appeals(commands.Cog):
         except Exception as e:
             error_channel = interaction.client.get_channel(config.error_channel)
             await error_channel.send(f"```Error in `/appeal`\n{e}\n```")
-    
-    
+        db.close()
 
 
 async def setup(bot):

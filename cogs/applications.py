@@ -11,13 +11,7 @@ import traceback
 load_dotenv()
 api_key = os.getenv("dev_key")
 
-db = mysql.connector.connect(
-    host=os.getenv("punishments_host"),
-    user=os.getenv("punishments_user"),
-    password=os.getenv("punishments_password"),
-    database=os.getenv("punishments_database")
-)
-cursor = db.cursor()
+
 
 applications_channel_id = 1179232602855575572
 
@@ -28,6 +22,13 @@ class ApplicationModal(discord.ui.Modal, title="Staff Application", ):
     question = discord.ui.TextInput(label="Your response to acceptance/denial?", style=TextStyle.long, required=True)
     time = discord.ui.TextInput(label="How much time can you lend to the server?", style=TextStyle.long, required=True)
     async def on_submit(self, interaction: discord.Interaction):
+        db = mysql.connector.connect(
+            host=os.getenv("punishments_host"),
+            user=os.getenv("punishments_user"),
+            password=os.getenv("punishments_password"),
+            database=os.getenv("punishments_database")
+        )
+        cursor = db.cursor()
         try:
             cursor.execute(f"SELECT * FROM verified WHERE user_id = {interaction.user.id}")
             result = cursor.fetchone()
@@ -73,6 +74,7 @@ class ApplicationModal(discord.ui.Modal, title="Staff Application", ):
             error_channel = self.bot.get_channel(config.error_channel)
             string = f"{traceback.format_exc()}"
             await error_channel.send(f"```{string}```")
+        db.close()
 
 class applications(commands.Cog):
     def __init__(self, bot):
@@ -103,6 +105,13 @@ class applications(commands.Cog):
 
     @app_commands.command(name="apply", description="Please make sure your DMs are open for this server before you submit your application!")
     async def apply(self, interaction: discord.Interaction):
+        db = mysql.connector.connect(
+            host=os.getenv("punishments_host"),
+            user=os.getenv("punishments_user"),
+            password=os.getenv("punishments_password"),
+            database=os.getenv("punishments_database")
+        )
+        cursor = db.cursor()
         try:
             cursor.execute(f"SELECT * FROM verified WHERE user_id = {interaction.user.id}")
             result = cursor.fetchone()
@@ -129,6 +138,7 @@ class applications(commands.Cog):
         except Exception as e:
             error_channel = self.bot.get_channel(config.error_channel)
             await error_channel.send(f"Error in `/apply`.\n{e}")
+        db.close()
     
     @app_commands.command(name="accept", description="Accept a user's application.")
     @commands.has_permissions(administrator=True)
