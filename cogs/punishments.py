@@ -317,7 +317,6 @@ class punishments(commands.Cog):
             await user.ban(reason=reason)
             cursor.execute(f"INSERT INTO bans (user_id, reason, staff_id, timestamp) VALUES ({user.id}, '{reason}', {interaction.user.id}, {int(timestamp)})")
             db.commit()
-            await interaction.response.send_message(embed=initialEmbed, ephemeral=True)
             await punishments.send(f"Banned {user.mention}", file=evidence)
             await mod_logs.send(embed=embed)
         except:
