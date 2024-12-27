@@ -528,7 +528,7 @@ class logs(commands.Cog):
                 logs = self.bot.get_channel(config.log_channel)
                 await logs.send(embed=embed)
             except Exception as e:
-                if str(e).find("Must be 1024 or fewer in length.") != -1:
+                if str(e).find("400 Bad Reqyest (error code 50035)") != -1:
                     logs = self.bot.get_channel(config.log_channel)
                     embed = discord.Embed(title="Message Edited", description=f"Message from {before.author.mention} edited in {before.channel.mention}.", color=0x00ff00)
                     embed.add_field(name="Before", value="MESSAGE TOO LONG", inline=False)
