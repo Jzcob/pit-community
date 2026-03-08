@@ -4,40 +4,38 @@ from discord import app_commands
 from datetime import datetime as dt
 from datetime import timedelta as td
 import mysql.connector
+from mysql.connector import pooling
 import config
 import traceback
 import os
 from dotenv import load_dotenv
-from contextlib import contextmanager
 
 load_dotenv()
 
 def is_staff(member: discord.Member):
-    return discord.utils.get(member.roles, id=config.staff)
+    return any(role.id == config.staff for role in member.roles)
 
-class punishments(commands.Cog):
+class Punishments(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-
-    @contextmanager
-    def get_db_connection(self):
-        """Context manager to ensure DB connections always close."""
-        db = mysql.connector.connect(
-            host=os.getenv("punishments_host"),
-            user=os.getenv("punishments_user"),
-            password=os.getenv("punishments_password"),
-            database=os.getenv("punishments_database")
-        )
-        cursor = db.cursor()
         try:
-            yield db, cursor
-        finally:
-            cursor.close()
-            db.close()
+            self.db_pool = mysql.connector.pooling.MySQLConnectionPool(
+                pool_name="punishments_pool",
+                pool_size=5,
+                host=os.getenv("punishments_host"),
+                user=os.getenv("punishments_user"),
+                password=os.getenv("punishments_password"),
+                database=os.getenv("punishments_database")
+            )
+        except Exception as e:
+            print(f"CRITICAL: Could not initialize DB pool: {e}")
+
+    def get_db_connection(self):
+        return self.db_pool.get_connection()
 
     @commands.Cog.listener()
     async def on_ready(self):
-        print("LOADED: `punishments.py`")
+        print("LOADED: `punishments.py` with Connection Pooling")
 
     async def log_error(self, command_name, error_text):
         error_channel = self.bot.get_channel(config.error_channel)
@@ -54,34 +52,46 @@ class punishments(commands.Cog):
         if user.id == interaction.user.id or user.id == self.bot.user.id or is_staff(user):
             return await interaction.followup.send("You cannot warn this user.", ephemeral=True)
 
-        with self.get_db_connection() as (db, cursor):
+        try:
+            timestamp = int(dt.timestamp(dt.now()))
+            db = self.get_db_connection()
+            cursor = db.cursor()
+            
+            cursor.execute(
+                "INSERT INTO warnings (user_id, reason, staff_id, timestamp) VALUES (%s, %s, %s, %s)",
+                (user.id, reason, interaction.user.id, timestamp)
+            )
+            db.commit()
+            cursor.close()
+            db.close()
+
+            embed = discord.Embed(title=f"Warned {user.name}", description=f"**Reason:** {reason}\n**Staff:** {interaction.user.mention}", color=discord.Color.red())
+            if evidence:
+                embed.set_image(url=evidence.url)
+
+            await interaction.followup.send(embed=embed)
+
             try:
-                timestamp = int(dt.timestamp(dt.now()))
-                cursor.execute(
-                    "INSERT INTO warnings (user_id, reason, staff_id, timestamp) VALUES (%s, %s, %s, %s)",
-                    (user.id, reason, interaction.user.id, timestamp)
-                )
-                db.commit()
+                user_embed = discord.Embed(title=f"You were warned in {interaction.guild.name}", description=f"Reason: {reason}", color=discord.Color.red())
+                await user.send(embed=user_embed)
+            except: pass
 
-                embed = discord.Embed(title=f"Warned {user.name}", description=f"**Reason:** {reason}\n**Staff:** {interaction.user.mention}", color=discord.Color.red())
-                if evidence:
-                    embed.set_image(url=evidence.url)
+            punishment_channel = self.bot.get_channel(config.punishments)
+            if punishment_channel:
+                file = await evidence.to_file() if evidence else None
+                await punishment_channel.send(f"Warned {user.mention}", file=file)
+            
+            mod_log = self.bot.get_channel(config.mod_log_channel)
+            if mod_log:
+                await mod_log.send(embed=embed)
 
-                try:
-                    userEmbed = discord.Embed(title=f"You were warned in {interaction.guild.name}", description=f"Reason: {reason}", color=discord.Color.red())
-                    await user.send(embed=userEmbed)
-                except:
-                    pass
-
-                await interaction.followup.send(embed=embed)
-                await self.bot.get_channel(config.punishments).send(f"Warned {user.mention}", file=await evidence.to_file() if evidence else None)
-                await self.bot.get_channel(config.mod_log_channel).send(embed=embed)
-            except Exception:
-                await self.log_error("/warn", traceback.format_exc())
+        except Exception:
+            await self.log_error("/warn", traceback.format_exc())
+            await interaction.followup.send("Database or execution error occurred.", ephemeral=True)
 
     @app_commands.command(name="trade-warn", description="Warn a user regarding trade rules.")
     @app_commands.checks.has_any_role(config.staff)
-    async def tradeWarn(self, interaction: discord.Interaction, user: discord.Member, msgid: str):
+    async def trade_warn(self, interaction: discord.Interaction, user: discord.Member, msgid: str):
         await interaction.response.defer(ephemeral=True)
         
         try:
@@ -89,25 +99,36 @@ class punishments(commands.Cog):
             if message.author.id != user.id:
                 return await interaction.followup.send("Message author mismatch.", ephemeral=True)
 
-            with self.get_db_connection() as (db, cursor):
-                timestamp = int(dt.timestamp(dt.now()))
-                cursor.execute(
-                    "INSERT INTO warnings (user_id, reason, staff_id, timestamp) VALUES (%s, %s, %s, %s)",
-                    (user.id, "TRADE WARN", interaction.user.id, timestamp)
-                )
-                db.commit()
+            db = self.get_db_connection()
+            cursor = db.cursor()
+            timestamp = int(dt.timestamp(dt.now()))
+            cursor.execute(
+                "INSERT INTO warnings (user_id, reason, staff_id, timestamp) VALUES (%s, %s, %s, %s)",
+                (user.id, "TRADE WARN", interaction.user.id, timestamp)
+            )
+            db.commit()
+            cursor.close()
+            db.close()
 
-                cantTrade = interaction.guild.get_role(797912815280324681)
-                if cantTrade: await user.add_roles(cantTrade)
-                await message.delete()
+            cant_trade = interaction.guild.get_role(797912815280324681)
+            if cant_trade: 
+                await user.add_roles(cant_trade)
+            
+            msg_content = message.content[:1024]
+            await message.delete()
 
-                embed = discord.Embed(title=f"Trade Warned {user.name}", description=f"Staff: {interaction.user.mention}", color=discord.Color.red())
-                embed.add_field(name="Infringing Message", value=message.content[:1024])
-                
-                await interaction.followup.send(embed=embed)
-                await self.bot.get_channel(config.mod_log_channel).send(embed=embed)
+            embed = discord.Embed(title=f"Trade Warned {user.name}", description=f"Staff: {interaction.user.mention}", color=discord.Color.red())
+            embed.add_field(name="Infringing Message", value=msg_content if msg_content else "No Text Content")
+            
+            await interaction.followup.send(embed=embed)
+            
+            mod_log = self.bot.get_channel(config.mod_log_channel)
+            if mod_log:
+                await mod_log.send(embed=embed)
+
         except Exception:
             await self.log_error("/trade-warn", traceback.format_exc())
+            await interaction.followup.send("Error processing trade warn. Check message ID.", ephemeral=True)
 
     @app_commands.command(name="timeout", description="Timeout a user.")
     @app_commands.describe(duration="The duration of the timeout.")
@@ -129,19 +150,26 @@ class punishments(commands.Cog):
         try:
             await user.timeout(punishment_duration, reason=reason)
             
-            with self.get_db_connection() as (db, cursor):
-                timestamp = int(dt.timestamp(dt.now()))
-                cursor.execute(
-                    "INSERT INTO timeouts (user_id, reason, staff_id, time, timestamp) VALUES (%s, %s, %s, %s, %s)",
-                    (user.id, reason, interaction.user.id, duration.name, timestamp)
-                )
-                db.commit()
+            db = self.get_db_connection()
+            cursor = db.cursor()
+            timestamp = int(dt.timestamp(dt.now()))
+            cursor.execute(
+                "INSERT INTO timeouts (user_id, reason, staff_id, time, timestamp) VALUES (%s, %s, %s, %s, %s)",
+                (user.id, reason, interaction.user.id, duration.name, timestamp)
+            )
+            db.commit()
+            cursor.close()
+            db.close()
 
             embed = discord.Embed(title=f"Timed out {user.name}", description=f"Duration: {duration.name}\nReason: {reason}", color=discord.Color.red())
             await interaction.followup.send(embed=embed)
-            await self.bot.get_channel(config.mod_log_channel).send(embed=embed)
+            
+            mod_log = self.bot.get_channel(config.mod_log_channel)
+            if mod_log:
+                await mod_log.send(embed=embed)
         except Exception:
             await self.log_error("/timeout", traceback.format_exc())
+            await interaction.followup.send("Failed to timeout user.", ephemeral=True)
 
     @app_commands.command(name="kick", description="Kick a user.")
     @app_commands.checks.has_any_role(config.jr_moderator, config.moderator, config.administrators)
@@ -158,13 +186,17 @@ class punishments(commands.Cog):
 
             await user.kick(reason=reason)
 
-            with self.get_db_connection() as (db, cursor):
-                cursor.execute("INSERT INTO kicks (user_id, reason, staff_id) VALUES (%s, %s, %s)", (user.id, reason, interaction.user.id))
-                db.commit()
+            db = self.get_db_connection()
+            cursor = db.cursor()
+            cursor.execute("INSERT INTO kicks (user_id, reason, staff_id) VALUES (%s, %s, %s)", (user.id, reason, interaction.user.id))
+            db.commit()
+            cursor.close()
+            db.close()
 
             await interaction.followup.send(f"Successfully kicked {user.name}.")
         except Exception:
             await self.log_error("/kick", traceback.format_exc())
+            await interaction.followup.send("Failed to kick user.", ephemeral=True)
 
     @app_commands.command(name="ban", description="Ban a user.")
     @app_commands.checks.has_any_role(config.moderator, config.administrators)
@@ -178,26 +210,34 @@ class punishments(commands.Cog):
 
             await user.ban(reason=reason)
 
-            with self.get_db_connection() as (db, cursor):
-                timestamp = int(dt.timestamp(dt.now()))
-                cursor.execute(
-                    "INSERT INTO bans (user_id, reason, staff_id, timestamp) VALUES (%s, %s, %s, %s)",
-                    (user.id, reason, interaction.user.id, timestamp)
-                )
-                db.commit()
+            db = self.get_db_connection()
+            cursor = db.cursor()
+            timestamp = int(dt.timestamp(dt.now()))
+            cursor.execute(
+                "INSERT INTO bans (user_id, reason, staff_id, timestamp) VALUES (%s, %s, %s, %s)",
+                (user.id, reason, interaction.user.id, timestamp)
+            )
+            db.commit()
+            cursor.close()
+            db.close()
 
             await interaction.followup.send(f"Banned {user.name}.")
         except Exception:
             await self.log_error("/ban", traceback.format_exc())
+            await interaction.followup.send("Failed to ban user.", ephemeral=True)
 
     @app_commands.command(name="logs", description="View a user's punishments.")
     @app_commands.checks.has_any_role(config.staff)
     async def logs(self, interaction: discord.Interaction, user: discord.Member):
         await interaction.response.defer()
         
-        with self.get_db_connection() as (db, cursor):
+        try:
+            db = self.get_db_connection()
+            cursor = db.cursor()
             cursor.execute("SELECT reason, staff_id, timestamp FROM warnings WHERE user_id = %s", (user.id,))
             warns = cursor.fetchall()
+            cursor.close()
+            db.close()
             
             embed = discord.Embed(title=f"Punishments for {user.name}", color=discord.Color.orange())
             
@@ -208,6 +248,9 @@ class punishments(commands.Cog):
                 embed.description = "No punishments found."
 
             await interaction.followup.send(embed=embed)
+        except Exception:
+            await self.log_error("/logs", traceback.format_exc())
+            await interaction.followup.send("Error retrieving logs.", ephemeral=True)
 
     @app_commands.command(name="purge", description="Purge messages.")
     @app_commands.checks.has_any_role(config.moderator, config.administrators)
@@ -220,4 +263,4 @@ class punishments(commands.Cog):
         await interaction.channel.purge(limit=amount, check=check)
 
 async def setup(bot):
-    await bot.add_cog(punishments(bot), guilds=[discord.Object(id=config.server_id)])
+    await bot.add_cog(Punishments(bot), guilds=[discord.Object(id=config.server_id)])
