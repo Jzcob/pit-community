@@ -8,12 +8,17 @@ from mysql.connector import pooling
 import config
 import traceback
 import os
+import re
 from dotenv import load_dotenv
 
 load_dotenv()
 
 def is_staff(member: discord.Member):
     return any(role.id == config.staff for role in member.roles)
+
+def clean_id(input_str: str):
+    """Extracts only digits from a string (fixes mentions/strings being passed as IDs)."""
+    return re.sub(r'\D', '', input_str)
 
 class Punishments(commands.Cog):
     def __init__(self, bot):
@@ -40,6 +45,9 @@ class Punishments(commands.Cog):
     async def log_error(self, command_name, error_text):
         error_channel = self.bot.get_channel(config.error_channel)
         if error_channel:
+            # Check if the error text is too long for a single message
+            if len(error_text) > 1900:
+                error_text = error_text[:1900] + "... [Truncated]"
             await error_channel.send(f"Error in `{command_name}`:\n```python\n{error_text}```")
 
     # --- Commands ---
@@ -79,7 +87,7 @@ class Punishments(commands.Cog):
             punishment_channel = self.bot.get_channel(config.punishments)
             if punishment_channel:
                 file = await evidence.to_file() if evidence else None
-                await punishment_channel.send(f"Warned {user.mention}", file=file)
+                await punishment_channel.send(f"Warned {user.mention}", file=file, embed=embed if not file else None)
             
             mod_log = self.bot.get_channel(config.mod_log_channel)
             if mod_log:
@@ -95,9 +103,18 @@ class Punishments(commands.Cog):
         await interaction.response.defer(ephemeral=True)
         
         try:
-            message = await interaction.channel.fetch_message(int(msgid))
+            # Clean ID to prevent ValueError: invalid literal for int()
+            cleaned_msgid = clean_id(msgid)
+            if not cleaned_msgid:
+                return await interaction.followup.send("Invalid Message ID provided.", ephemeral=True)
+
+            try:
+                message = await interaction.channel.fetch_message(int(cleaned_msgid))
+            except discord.NotFound:
+                return await interaction.followup.send("Could not find that message in this channel.", ephemeral=True)
+
             if message.author.id != user.id:
-                return await interaction.followup.send("Message author mismatch.", ephemeral=True)
+                return await interaction.followup.send("Message author mismatch (The ID provided isn't from the user specified).", ephemeral=True)
 
             db = self.get_db_connection()
             cursor = db.cursor()
@@ -112,10 +129,15 @@ class Punishments(commands.Cog):
 
             cant_trade = interaction.guild.get_role(797912815280324681)
             if cant_trade: 
-                await user.add_roles(cant_trade)
+                try:
+                    await user.add_roles(cant_trade)
+                except: pass
             
             msg_content = message.content[:1024]
-            await message.delete()
+            try:
+                await message.delete()
+            except discord.Forbidden:
+                pass # Bot lacks permission to delete
 
             embed = discord.Embed(title=f"Trade Warned {user.name}", description=f"Staff: {interaction.user.mention}", color=discord.Color.red())
             embed.add_field(name="Infringing Message", value=msg_content if msg_content else "No Text Content")
@@ -128,7 +150,7 @@ class Punishments(commands.Cog):
 
         except Exception:
             await self.log_error("/trade-warn", traceback.format_exc())
-            await interaction.followup.send("Error processing trade warn. Check message ID.", ephemeral=True)
+            await interaction.followup.send("Error processing trade warn.", ephemeral=True)
 
     @app_commands.command(name="timeout", description="Timeout a user.")
     @app_commands.describe(duration="The duration of the timeout.")
@@ -172,7 +194,7 @@ class Punishments(commands.Cog):
             await interaction.followup.send("Failed to timeout user.", ephemeral=True)
 
     @app_commands.command(name="kick", description="Kick a user.")
-    @app_commands.checks.has_any_role(config.jr_moderator, config.moderator, config.administrators)
+    @app_commands.checks.has_any_role(config.staff)
     async def kick(self, interaction: discord.Interaction, user: discord.Member, reason: str, evidence: discord.Attachment = None):
         await interaction.response.defer(ephemeral=True)
 
@@ -199,7 +221,7 @@ class Punishments(commands.Cog):
             await interaction.followup.send("Failed to kick user.", ephemeral=True)
 
     @app_commands.command(name="ban", description="Ban a user.")
-    @app_commands.checks.has_any_role(config.moderator, config.administrators)
+    @app_commands.checks.has_any_role(config.staff)
     async def ban(self, interaction: discord.Interaction, user: discord.Member, reason: str, evidence: discord.Attachment = None):
         await interaction.response.defer(ephemeral=True)
 
@@ -253,14 +275,17 @@ class Punishments(commands.Cog):
             await interaction.followup.send("Error retrieving logs.", ephemeral=True)
 
     @app_commands.command(name="purge", description="Purge messages.")
-    @app_commands.checks.has_any_role(config.moderator, config.administrators)
+    @app_commands.checks.has_any_role(config.staff)
     async def purge(self, interaction: discord.Interaction, amount: int, member: discord.Member = None):
         await interaction.response.send_message(f"Purging {amount} messages...", ephemeral=True)
         
         def check(m):
             return m.author == member if member else True
 
-        await interaction.channel.purge(limit=amount, check=check)
+        try:
+            await interaction.channel.purge(limit=amount, check=check)
+        except Exception:
+            await self.log_error("/purge", traceback.format_exc())
 
 async def setup(bot):
     await bot.add_cog(Punishments(bot), guilds=[discord.Object(id=config.server_id)])
