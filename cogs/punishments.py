@@ -17,7 +17,6 @@ def is_staff(member: discord.Member):
     return any(role.id == config.staff for role in member.roles)
 
 def clean_id(input_str: str):
-    """Extracts only digits from a string (fixes mentions/strings being passed as IDs)."""
     return re.sub(r'\D', '', input_str)
 
 class Punishments(commands.Cog):
@@ -45,10 +44,14 @@ class Punishments(commands.Cog):
     async def log_error(self, command_name, error_text):
         error_channel = self.bot.get_channel(config.error_channel)
         if error_channel:
-            # Check if the error text is too long for a single message
             if len(error_text) > 1900:
                 error_text = error_text[:1900] + "... [Truncated]"
             await error_channel.send(f"Error in `{command_name}`:\n```python\n{error_text}```")
+
+    # --- Utility: Hierarchy Check ---
+    def can_moderate(self, interaction: discord.Interaction, target: discord.Member):
+        """Checks if the bot has permission to moderate the target."""
+        return interaction.guild.me.top_role > target.top_role
 
     # --- Commands ---
 
@@ -60,18 +63,17 @@ class Punishments(commands.Cog):
         if user.id == interaction.user.id or user.id == self.bot.user.id or is_staff(user):
             return await interaction.followup.send("You cannot warn this user.", ephemeral=True)
 
+        db = None
         try:
             timestamp = int(dt.timestamp(dt.now()))
             db = self.get_db_connection()
             cursor = db.cursor()
-            
             cursor.execute(
                 "INSERT INTO warnings (user_id, reason, staff_id, timestamp) VALUES (%s, %s, %s, %s)",
                 (user.id, reason, interaction.user.id, timestamp)
             )
             db.commit()
             cursor.close()
-            db.close()
 
             embed = discord.Embed(title=f"Warned {user.name}", description=f"**Reason:** {reason}\n**Staff:** {interaction.user.mention}", color=discord.Color.red())
             if evidence:
@@ -86,8 +88,7 @@ class Punishments(commands.Cog):
 
             punishment_channel = self.bot.get_channel(config.punishments)
             if punishment_channel:
-                file = await evidence.to_file() if evidence else None
-                await punishment_channel.send(f"Warned {user.mention}", file=file, embed=embed if not file else None)
+                await punishment_channel.send(embed=embed)
             
             mod_log = self.bot.get_channel(config.mod_log_channel)
             if mod_log:
@@ -96,25 +97,27 @@ class Punishments(commands.Cog):
         except Exception:
             await self.log_error("/warn", traceback.format_exc())
             await interaction.followup.send("Database or execution error occurred.", ephemeral=True)
+        finally:
+            if db: db.close()
 
     @app_commands.command(name="trade-warn", description="Warn a user regarding trade rules.")
     @app_commands.checks.has_any_role(config.staff)
     async def trade_warn(self, interaction: discord.Interaction, user: discord.Member, msgid: str):
         await interaction.response.defer(ephemeral=True)
         
+        db = None
         try:
-            # Clean ID to prevent ValueError: invalid literal for int()
             cleaned_msgid = clean_id(msgid)
             if not cleaned_msgid:
-                return await interaction.followup.send("Invalid Message ID provided.", ephemeral=True)
+                return await interaction.followup.send("Invalid Message ID.", ephemeral=True)
 
             try:
                 message = await interaction.channel.fetch_message(int(cleaned_msgid))
             except discord.NotFound:
-                return await interaction.followup.send("Could not find that message in this channel.", ephemeral=True)
+                return await interaction.followup.send("Could not find that message.", ephemeral=True)
 
             if message.author.id != user.id:
-                return await interaction.followup.send("Message author mismatch (The ID provided isn't from the user specified).", ephemeral=True)
+                return await interaction.followup.send("Message author mismatch.", ephemeral=True)
 
             db = self.get_db_connection()
             cursor = db.cursor()
@@ -125,19 +128,15 @@ class Punishments(commands.Cog):
             )
             db.commit()
             cursor.close()
-            db.close()
 
             cant_trade = interaction.guild.get_role(797912815280324681)
             if cant_trade: 
-                try:
-                    await user.add_roles(cant_trade)
+                try: await user.add_roles(cant_trade)
                 except: pass
             
             msg_content = message.content[:1024]
-            try:
-                await message.delete()
-            except discord.Forbidden:
-                pass # Bot lacks permission to delete
+            try: await message.delete()
+            except: pass
 
             embed = discord.Embed(title=f"Trade Warned {user.name}", description=f"Staff: {interaction.user.mention}", color=discord.Color.red())
             embed.add_field(name="Infringing Message", value=msg_content if msg_content else "No Text Content")
@@ -145,12 +144,13 @@ class Punishments(commands.Cog):
             await interaction.followup.send(embed=embed)
             
             mod_log = self.bot.get_channel(config.mod_log_channel)
-            if mod_log:
-                await mod_log.send(embed=embed)
+            if mod_log: await mod_log.send(embed=embed)
 
         except Exception:
             await self.log_error("/trade-warn", traceback.format_exc())
             await interaction.followup.send("Error processing trade warn.", ephemeral=True)
+        finally:
+            if db: db.close()
 
     @app_commands.command(name="timeout", description="Timeout a user.")
     @app_commands.describe(duration="The duration of the timeout.")
@@ -166,9 +166,13 @@ class Punishments(commands.Cog):
     async def timeout(self, interaction: discord.Interaction, user: discord.Member, duration: app_commands.Choice[str], reason: str, evidence: discord.Attachment = None):
         await interaction.response.defer(ephemeral=True)
 
+        if not self.can_moderate(interaction, user):
+            return await interaction.followup.send("I cannot timeout this user (Hierarchy error).", ephemeral=True)
+
         durations = {"15m": td(minutes=15), "1h": td(hours=1), "6h": td(hours=6), "1d": td(days=1), "1w": td(weeks=1), "1m": td(weeks=4)}
         punishment_duration = durations.get(duration.value)
 
+        db = None
         try:
             await user.timeout(punishment_duration, reason=reason)
             
@@ -181,29 +185,29 @@ class Punishments(commands.Cog):
             )
             db.commit()
             cursor.close()
-            db.close()
 
             embed = discord.Embed(title=f"Timed out {user.name}", description=f"Duration: {duration.name}\nReason: {reason}", color=discord.Color.red())
             await interaction.followup.send(embed=embed)
             
             mod_log = self.bot.get_channel(config.mod_log_channel)
-            if mod_log:
-                await mod_log.send(embed=embed)
+            if mod_log: await mod_log.send(embed=embed)
         except Exception:
             await self.log_error("/timeout", traceback.format_exc())
             await interaction.followup.send("Failed to timeout user.", ephemeral=True)
+        finally:
+            if db: db.close()
 
     @app_commands.command(name="kick", description="Kick a user.")
     @app_commands.checks.has_any_role(config.staff)
     async def kick(self, interaction: discord.Interaction, user: discord.Member, reason: str, evidence: discord.Attachment = None):
         await interaction.response.defer(ephemeral=True)
 
-        if is_staff(user):
-            return await interaction.followup.send("Cannot kick staff.", ephemeral=True)
+        if is_staff(user) or not self.can_moderate(interaction, user):
+            return await interaction.followup.send("Cannot kick this user (Staff or Hierarchy error).", ephemeral=True)
 
+        db = None
         try:
-            try:
-                await user.send(f"You were kicked from {interaction.guild.name}. Reason: {reason}")
+            try: await user.send(f"You were kicked from {interaction.guild.name}. Reason: {reason}")
             except: pass
 
             await user.kick(reason=reason)
@@ -213,21 +217,27 @@ class Punishments(commands.Cog):
             cursor.execute("INSERT INTO kicks (user_id, reason, staff_id) VALUES (%s, %s, %s)", (user.id, reason, interaction.user.id))
             db.commit()
             cursor.close()
-            db.close()
 
-            await interaction.followup.send(f"Successfully kicked {user.name}.")
+            try: await interaction.followup.send(f"Successfully kicked {user.name}.")
+            except: pass 
+
         except Exception:
             await self.log_error("/kick", traceback.format_exc())
             await interaction.followup.send("Failed to kick user.", ephemeral=True)
+        finally:
+            if db: db.close()
 
     @app_commands.command(name="ban", description="Ban a user.")
     @app_commands.checks.has_any_role(config.staff)
     async def ban(self, interaction: discord.Interaction, user: discord.Member, reason: str, evidence: discord.Attachment = None):
         await interaction.response.defer(ephemeral=True)
 
+        if not self.can_moderate(interaction, user):
+            return await interaction.followup.send("I cannot ban this user (Hierarchy error).", ephemeral=True)
+
+        db = None
         try:
-            try:
-                await user.send(f"You were banned from {interaction.guild.name}. Reason: {reason}")
+            try: await user.send(f"You were banned from {interaction.guild.name}. Reason: {reason}")
             except: pass
 
             await user.ban(reason=reason)
@@ -241,30 +251,34 @@ class Punishments(commands.Cog):
             )
             db.commit()
             cursor.close()
-            db.close()
 
             await interaction.followup.send(f"Banned {user.name}.")
         except Exception:
             await self.log_error("/ban", traceback.format_exc())
             await interaction.followup.send("Failed to ban user.", ephemeral=True)
+        finally:
+            if db: db.close()
 
     @app_commands.command(name="logs", description="View a user's punishments.")
     @app_commands.checks.has_any_role(config.staff)
     async def logs(self, interaction: discord.Interaction, user: discord.Member):
         await interaction.response.defer()
         
+        db = None
         try:
             db = self.get_db_connection()
             cursor = db.cursor()
             cursor.execute("SELECT reason, staff_id, timestamp FROM warnings WHERE user_id = %s", (user.id,))
             warns = cursor.fetchall()
             cursor.close()
-            db.close()
             
             embed = discord.Embed(title=f"Punishments for {user.name}", color=discord.Color.orange())
             
             if warns:
                 val = "\n".join([f"{i+1}. <@{w[1]}>: `{w[0]}` (<t:{w[2]}:D>)" for i, w in enumerate(warns)])
+                # Safety check for field character limit (1024)
+                if len(val) > 1024:
+                    val = val[:1020] + "..."
                 embed.add_field(name="Warnings", value=val, inline=False)
             else:
                 embed.description = "No punishments found."
@@ -273,10 +287,15 @@ class Punishments(commands.Cog):
         except Exception:
             await self.log_error("/logs", traceback.format_exc())
             await interaction.followup.send("Error retrieving logs.", ephemeral=True)
+        finally:
+            if db: db.close()
 
     @app_commands.command(name="purge", description="Purge messages.")
     @app_commands.checks.has_any_role(config.staff)
     async def purge(self, interaction: discord.Interaction, amount: int, member: discord.Member = None):
+        if amount > 100:
+            return await interaction.response.send_message("Limit 100 per purge.", ephemeral=True)
+        
         await interaction.response.send_message(f"Purging {amount} messages...", ephemeral=True)
         
         def check(m):
